@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant browser
+    participant server
+    
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+    activate server
+    server-->>browser: Note created confirmation
+    deactivate server
+    
+    Note right of browser: The browser executs the javascript to add the new note to the client side JSON and display it.
