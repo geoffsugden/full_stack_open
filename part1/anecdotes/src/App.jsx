@@ -19,21 +19,31 @@ const App = () => {
     'The only way to go fast, is to go well.'
   ]
    
-  const [selected, setSelected] = useState(0)
+  const [anecData, setAnecData] = useState({
+    selected: 0, 
+    anecVotes: Array(anecdotes.length).fill(0)
+  })
 
-  const handleClick = () => {
+  const handleNextClick = () => {
     const randNum = parseInt(Math.random()*anecdotes.length)
-    setSelected(randNum)
-    console.log(randNum)
-    
+    const copy = { ...anecData }
+    copy.selected = randNum
+    setAnecData(copy)
+  }
+
+  const handleVoteClick = () => {
+    const copy = { ...anecData }
+    copy.anecVotes[anecData.selected] += 1
+    setAnecData(copy)
   }
 
   return (
     <div>
       <h1>Hello, Would you like an anecdote?</h1>
-      <Button onClick={handleClick} text="Push Me for Another Anecdote" />
-      {anecdotes[selected]}
-      
+      <Button onClick={handleNextClick} text="Push Me" />
+      <p>{anecdotes[anecData.selected]}</p>
+      <Button onClick={handleVoteClick} text="Vote for this Anecdote" />
+      <p>This anecdote has {anecData.anecVotes[anecData.selected]} votes. If you'd like it to have more you know what to do!</p>
     </div>
   )
 }
