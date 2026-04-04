@@ -2,11 +2,30 @@ import { useState } from 'react'
 
 const Button = ({onClick, text}) => {
   return (
-    <div>
-      <button onClick={onClick}>{text}</button>
-    </div>
+    <button onClick={onClick}>{text}</button>
+    
   )
 }
+
+const PopularAnecdote = ({theAnecdotes, theVotes}) => {
+
+  let max = theVotes[0]
+  let maxIndex = 0
+
+  for (var i = 1; i < theVotes.length; i++) {
+    if(theVotes[i] > max) { 
+      maxIndex = i
+      max = theVotes[i]
+    }
+  }
+  return (
+    <div>
+      <p>{theAnecdotes[maxIndex]}</p>
+    </div>
+    
+  )
+}
+
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -39,11 +58,13 @@ const App = () => {
 
   return (
     <div>
-      <h1>Hello, Would you like an anecdote?</h1>
-      <Button onClick={handleNextClick} text="Push Me" />
+      <h2>Anecdote of the Day</h2>
       <p>{anecdotes[anecData.selected]}</p>
-      <Button onClick={handleVoteClick} text="Vote for this Anecdote" />
-      <p>This anecdote has {anecData.anecVotes[anecData.selected]} votes. If you'd like it to have more you know what to do!</p>
+      <p>has {anecData.anecVotes[anecData.selected]} votes</p>
+      <Button onClick={handleVoteClick} text="vote" />
+      <Button onClick={handleNextClick} text="next anecdote" />
+      <h2>Anecdote with most votes</h2>
+      <PopularAnecdote theAnecdotes={anecdotes} theVotes={anecData.anecVotes} />
     </div>
   )
 }
