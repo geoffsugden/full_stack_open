@@ -13,9 +13,9 @@ const App = () => {
   const handleAddName = (event) => {
     event.preventDefault()
     const newPerson = {
-      name: newName
+      name: newName.trim()
     }
-    setPersons(persons.concat(newPerson))
+    persons.find((person) => person.name === newPerson.name) ? alert(`${newName} already exists!`) : setPersons(persons.concat(newPerson))
     setNewName('')
   }
 
