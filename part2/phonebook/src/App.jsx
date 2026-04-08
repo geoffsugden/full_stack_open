@@ -1,4 +1,10 @@
 import { useState } from 'react'
+import Persons from './components/Persons'
+import PersonForm from './components/PersonForm'
+import Filter from './components/Filter'
+
+
+
 
 
 
@@ -9,51 +15,24 @@ const App = () => {
     { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
     { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
   ]) 
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
   const [filterValue, setFilterValue] = useState('')
-
-  const handleNameChange = (event) => {
-    setNewName(event.target.value)
-  }
-  
-  const handleNumberChange = (event) => {
-    setNewNumber(event.target.value)
-  }
-
-  const handleAddPerson = (event) => {
-    event.preventDefault()
-    const newPerson = {
-      name: newName.trim(), 
-      number: newNumber.trim()
-    }
-    persons.find((person) => person.name === newPerson.name) ? alert(`${newName} already exists!`) : setPersons(persons.concat(newPerson))
-    setNewName('')
-    setNewNumber('')
-  }
-
-  const filterPersons = (event) => {
-    setFilterValue(event.target.value.toLowerCase())
-  }
-
-  const personsToShow = filterValue.length ? persons.filter(person => person.name.toLowerCase().includes(filterValue.toLowerCase())) : persons
-
 
   return (
     <div>
       <h2>Phonebook</h2>
-      <div>Filter shown with <input onChange={filterPersons} /></div>
+      <Filter setFilter={setFilterValue} />
+      
       <h3>Add a new person</h3>
-      <form>
-        <div>name:<input value={newName} onChange={handleNameChange}/></div>
-        <div>number:<input value={newNumber} onChange={handleNumberChange}/></div>
-        <div><button type="submit" onClick={handleAddPerson}>add</button></div>
-      </form>
+      <PersonForm addPerson={setPersons} persons={persons} />
+
       <h2>Numbers</h2>
-      <div>{personsToShow.map(person => <div key={person.name}>{person.name} {person.number}</div>)}</div>
+      <Persons persons={persons} filterValue={filterValue} />
+
     </div>
 
   )
 }
+
+
 
 export default App
