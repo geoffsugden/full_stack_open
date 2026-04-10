@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import PhoneBookServices from '../services/phonebook'
+import PhoneBookService from '../services/phonebook'
 
 const PersonForm = ({persons, addPerson}) => {
   const [newName, setNewName] = useState('')
@@ -19,11 +19,16 @@ const PersonForm = ({persons, addPerson}) => {
       name: newName.trim(), 
       number: newNumber.trim()
     }
-    if (persons.find((person) => person.name === newPerson.name)) {
-      alert(`${newName} already exists!`)
+    const existingPerson = persons.find((person) => person.name === newPerson.name)
+    if (existingPerson) {
+      const changeNumber = window.confirm(`${newName} already exists, update number?`)
+      if (changeNumber) { 
+        PhoneBookService.update(existingPerson.id, newPerson)
+        .then(response => addPerson(persons.filter(person => person.id !== existingPerson.id).concat(response)))
+      }
     } else {
-      PhoneBookServices.create(newPerson)
-        .then(addPerson(persons.concat(newPerson)))
+      PhoneBookService.create(newPerson)
+        .then(response => addPerson(persons.concat(response)))
     }
     setNewName('')
     setNewNumber('')

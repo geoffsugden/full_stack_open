@@ -21,14 +21,19 @@
       "id": "4"
     },
     {
-      "name": "Geoff Sugden",
-      "number": "021-409-359",
-      "id": "5"
+      "name": "Geoffrey Sugden",
+      "number": "021 409 359",
+      "id": "m2VRd6LtrRw"
     },
     {
-      "name": "Geoffrey Sugden",
-      "number": "021 712 197",
-      "id": "esHt5WeEoD8"
+      "name": "Andrea Kofoet",
+      "number": "021 02346459",
+      "id": "i4_WwRUnwOs"
+    },
+    {
+      "name": "Bridget Sugden",
+      "number": "789456",
+      "id": "Xo--71kiIVo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
