@@ -4,6 +4,7 @@ import Persons from './components/Persons'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
 import Notification from './components/Notification'
+import PhoneBookService from './services/phonebook'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
@@ -11,10 +12,10 @@ const App = () => {
   const [messageValue, setMessageValue] = useState(null)
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+    PhoneBookService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   }, [])
 
@@ -29,7 +30,7 @@ const App = () => {
       <PersonForm addPerson={setPersons} persons={persons} setMessageValue={setMessageValue} />
 
       <h2>Numbers</h2>
-      <Persons persons={persons} filterValue={filterValue} setMessageValue={setMessageValue}/>
+      <Persons persons={persons} setPersons={setPersons} filterValue={filterValue} setMessageValue={setMessageValue} />
 
     </div>
 
