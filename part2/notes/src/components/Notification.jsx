@@ -1,5 +1,5 @@
 const Notification = ({ message }) => {
-    return message === null ? null : <div className="error">{message}</div>
+    return message ? <div className="error">{message}</div> : null
 }
 
 export default Notification

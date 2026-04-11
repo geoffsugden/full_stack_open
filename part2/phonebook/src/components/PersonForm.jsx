@@ -1,5 +1,6 @@
 import { useState } from 'react'
-const PersonForm = ({persons, addPerson}) => {
+
+const PersonForm = ({persons, addPerson, setMessageValue}) => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   
@@ -17,17 +18,24 @@ const PersonForm = ({persons, addPerson}) => {
       name: newName.trim(), 
       number: newNumber.trim()
     }
-    persons.find((person) => person.name === newPerson.name) ? alert(`${newName} already exists!`) : addPerson(persons.concat(newPerson))
+    if (persons.find((person) => person.name === newPerson.name)) {
+      alert(`${newName} already exists!`)
+     } else {
+      addPerson(persons.concat(newPerson))
+      setMessageValue(`Added ${newPerson.name}`)
+      setTimeout(() => {setMessageValue(null)},5000)
+     }
+    
     setNewName('')
     setNewNumber('')
     }
 
     return (
-        <form>
+      <form>
         <div>name:<input value={newName} onChange={handleNameChange}/></div>
         <div>number:<input value={newNumber} onChange={handleNumberChange}/></div>
         <div><button type="submit" onClick={handleAddPerson}>add</button></div>
-        </form>
+      </form>
     )
 }
 
