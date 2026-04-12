@@ -3,7 +3,7 @@ import axios from 'axios'
 import Persons from './components/Persons'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
-import Notification from './components/Notification'
+import Notifications from './components/Notification'
 import PhoneBookService from './services/phonebook'
 
 const App = () => {
@@ -26,7 +26,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={message} />
+      <Notifications.Notification message={message} />
       <Filter setFilter={setFilterValue} />
       
       <h3>Add a new person</h3>

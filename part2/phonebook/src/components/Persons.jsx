@@ -1,4 +1,6 @@
 import PhoneBookService from '../services/phonebook'
+import Notifications from './Notification'
+
 const Persons = ({persons, setPersons, filterValue, setMessage}) => {
   
   const personsToShow = filterValue.length ? persons.filter(person => person.name.toLowerCase().includes(filterValue.toLowerCase())) : persons
@@ -9,13 +11,21 @@ const Persons = ({persons, setPersons, filterValue, setMessage}) => {
     if (result) {
       PhoneBookService.delRecord(id) 
         .then(response => setPersons(persons.filter(person => person.id !== response.id)))
-        setMessage({messageValue: `${person.name} has been deleted.`, messageType: 'message'})
-            setTimeout(() => {setMessage({messageValue: null, messageType: null})},3000)
-            setPersons(personsToShow.filter(person => person.id !== id))
+        .then(() => Notifications.handleMessage({
+          setMessage:setMessage, 
+          mText:`Person ${person.name} has been deleted`, 
+          mType:'message', 
+          timeout:3000
+        }))
+        .then(setPersons(personsToShow.filter(person => person.id !== id)))
         .catch(
           error => {
-            setMessage({messageValue: `${person.name} does not exist on server. They may have been deleted.`, messageType: 'error'})
-            setTimeout(() => {setMessage({messageValue: null, messageType: null})},3000)
+            Notifications.NotificationhandleMessage({
+              setMessage: setMessage, 
+              mText: `${person.name} does not exist on server. They may have been deleted.`, 
+              mType: 'error', 
+              timeout:3000
+            })
             setPersons(personsToShow.filter(person => person.id !== id))
           }
         )

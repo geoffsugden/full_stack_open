@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PhoneBookService from '../services/phonebook'
+import Notifications from './Notification'
 
 const PersonForm = ({persons, addPerson, setMessage}) => {
   const [newName, setNewName] = useState('')
@@ -13,6 +14,7 @@ const PersonForm = ({persons, addPerson, setMessage}) => {
     setNewNumber(event.target.value)
   }
 
+
   const handleAddPerson = (event) => {
     event.preventDefault()
     const newPerson = {
@@ -23,22 +25,21 @@ const PersonForm = ({persons, addPerson, setMessage}) => {
     if (existingPerson) {
       const changeNumber = window.confirm(`${newName} already exists, update number?`)
       
-      
       if (changeNumber) { 
         PhoneBookService.update(existingPerson.id, newPerson)
           .then(response => addPerson(persons.filter(person => person.id !== existingPerson.id).concat(response)))
-          .then(setMessage({ messageValue: `Updated ${newPerson.name}`, messageType: 'message'}))
-          .then(setTimeout(() => {setMessage( { messageValue: null, messageType: null })},5000))
+          .then(() => Notifications.handleMessage({ setMessage:setMessage, mText: `Updated ${newPerson.name}`, mType: 'message', timeout: 5000}))
+          
       } else {
         PhoneBookService.update(existingPerson.id, existingPerson)
-          .then(response => setMessage({messageValue:`${response.name} already exists, no changes made`, messageType:'message'}))
-          .then(setTimeout(() => {setMessage({ messageValue: null, messageType: null})},5000))
+          .then(response => Notifications.handleMessage({setMessage:setMessage, mText:`${response.name} already exists, no changes made`, mType:'message', timeout: 5000}))
+ 
       }
     } else {
       PhoneBookService.create(newPerson)
         .then(response => addPerson(persons.concat(response)))
-        .then(setMessage({messageValue: `Added ${newPerson.name}`, messageType: 'message'}))
-        .then(setTimeout(() => {setMessage({ messageValue: null, messageType: null })},5000))
+        .then(Notifications.handleMessage({setMessage:setMessage, mText: `Added ${newPerson.name}`, mType: 'message', timeout: 5000}))
+
      }
     
     setNewName('')

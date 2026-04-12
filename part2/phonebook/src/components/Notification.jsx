@@ -7,4 +7,11 @@ const Notification = ({message}) => {
 
 }
 
-export default Notification
+const handleMessage = ({setMessage, mText, mType, timeout}) => {
+    console.log('messageValue', mText)
+    setMessage( {messageValue:mText, messageType:mType} )
+    setTimeout(() => setMessage({messageValue:null, messageType:null}), timeout)
+}
+  
+
+export default { Notification, handleMessage }
