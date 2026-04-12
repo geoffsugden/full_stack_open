@@ -29,11 +29,6 @@
       "name": "Andrea Kofoet",
       "number": "021 02346459",
       "id": "i4_WwRUnwOs"
-    },
-    {
-      "name": "Bridget Sugden",
-      "number": "789456",
-      "id": "Xo--71kiIVo"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

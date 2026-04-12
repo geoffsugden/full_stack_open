@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import PhoneBookService from '../services/phonebook'
 
-const PersonForm = ({persons, addPerson, setMessageValue}) => {
+const PersonForm = ({persons, addPerson, setMessage}) => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   
@@ -22,15 +22,23 @@ const PersonForm = ({persons, addPerson, setMessageValue}) => {
     const existingPerson = persons.find((person) => person.name === newPerson.name)
     if (existingPerson) {
       const changeNumber = window.confirm(`${newName} already exists, update number?`)
+      
+      
       if (changeNumber) { 
         PhoneBookService.update(existingPerson.id, newPerson)
-        .then(response => addPerson(persons.filter(person => person.id !== existingPerson.id).concat(response)))
+          .then(response => addPerson(persons.filter(person => person.id !== existingPerson.id).concat(response)))
+          .then(setMessage({ messageValue: `Updated ${newPerson.name}`, messageType: 'message'}))
+          .then(setTimeout(() => {setMessage( { messageValue: null, messageType: null })},5000))
+      } else {
+        PhoneBookService.update(existingPerson.id, existingPerson)
+          .then(response => setMessage({messageValue:`${response.name} already exists, no changes made`, messageType:'message'}))
+          .then(setTimeout(() => {setMessage({ messageValue: null, messageType: null})},5000))
       }
     } else {
       PhoneBookService.create(newPerson)
         .then(response => addPerson(persons.concat(response)))
-      setMessageValue(`Added ${newPerson.name}`)
-      setTimeout(() => {setMessageValue(null)},5000)
+        .then(setMessage({messageValue: `Added ${newPerson.name}`, messageType: 'message'}))
+        .then(setTimeout(() => {setMessage({ messageValue: null, messageType: null })},5000))
      }
     
     setNewName('')

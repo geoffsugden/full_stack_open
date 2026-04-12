@@ -9,7 +9,10 @@ import PhoneBookService from './services/phonebook'
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [filterValue, setFilterValue] = useState('')
-  const [messageValue, setMessageValue] = useState(null)
+  const [message, setMessage] = useState({
+    messageValue: null, 
+    messageType: null
+  })
 
   useEffect(() => {
     PhoneBookService
@@ -23,14 +26,14 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification messageValue={messageValue} />
+      <Notification message={message} />
       <Filter setFilter={setFilterValue} />
       
       <h3>Add a new person</h3>
-      <PersonForm addPerson={setPersons} persons={persons} setMessageValue={setMessageValue} />
+      <PersonForm addPerson={setPersons} persons={persons} setMessage={setMessage} />
 
       <h2>Numbers</h2>
-      <Persons persons={persons} setPersons={setPersons} filterValue={filterValue} setMessageValue={setMessageValue} />
+      <Persons persons={persons} setPersons={setPersons} filterValue={filterValue} setMessage={setMessage} />
 
     </div>
 

@@ -1,6 +1,9 @@
-const Notification = ({messageValue}) => {
+const Notification = ({message}) => {
     
-    return messageValue ? <div className="message">{messageValue}</div> : null 
+    const messageValue = message.messageValue
+    const messageType = message.messageType
+
+    return messageValue ? <div className={messageType}>{messageValue}</div> : null
 
 }
 
