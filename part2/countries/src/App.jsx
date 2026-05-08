@@ -17,7 +17,7 @@ const Language  = ({languages}) => {
       <div>
         <h3>Languages</h3>
         <ul>
-          {langValues.map(language => <li>{language}</li>)}
+          {langValues.map(language => <li key={language}>{language}</li>)}
         </ul>
       </div>
     )
@@ -59,15 +59,30 @@ const Capital = ({capitals}) => {
   }
 }
 
-const Country = ({country}) => {
- 
+const CountryInfo = ({country}) => {
+      return ( 
+        <div>
+          <h2>{country.name.common}</h2>
+          <Capital capitals={country.capital}/> 
+          <Area area={country.area} /> 
+          <Language languages={country.languages} /> 
+          <img src={country.flags.png} alt={country.flags.alt} /> 
+        </div>
+      )
+}
+
+const Country = ({country,showButton}) => {
+  const [showCountry, setShowCountries] = useState(false)
+
+  const handleShowCountry = (event) => {
+    setShowCountries(!showCountry)
+  }
+
   return (
     <div>
-      <h2>{country.name.common}</h2>
-      <Capital capitals={country.capital} />
-      <Area area={country.area} />
-      <Language languages={country.languages} />
-      <img src={country.flags.png} alt={country.flags.alt} />
+      
+      {showButton ? country.name.common : ''} {showButton ? <button onClick={handleShowCountry}>{showCountry ? 'Hide' : 'Show'}</button> : ''}
+      {showCountry || !showButton ? <CountryInfo key={country.cca3} country={country} /> : '' }
     </div>
   )
 }
@@ -94,11 +109,24 @@ const App = () => {
 
   const countriesToShow = filterValue ? countries.filter(country => country.name.common.toLowerCase().includes(filterValue.toLowerCase())) : countries  
   
+  const fullName = () => {
+    let cMatch = false
+    for(cName in countriesToShow.map(country => country.common.name)) {
+      if (cMatch) { break}
+      if(cName === filterValue && filterValue.Trim().length > 0) {
+        cMatch = true
+      }
+    }
+    return cMatch
+  }
+
   return (
     <div>
-      <h2>Hello World</h2>
+      <h2>Stuff about Countries</h2>
       <input onChange={filterCountries}></input>
-      {countriesToShow.length > 10 ? <p>Too many countries, please make your search term more specific.</p> : countriesToShow.map(country => <Country key={country.cca3} country={country} />)} 
+      {countriesToShow.length > 10 && <p>Too many countries, please make your search term more specific.</p>}
+      {countriesToShow.length === 1 && countriesToShow.map(country => <Country key={country.cca3} country={country} showButton={false}/>)}
+      {countriesToShow.length >1 && countriesToShow.length <10 && countriesToShow.map(country => <Country key={country.cca3} country={country} showButton={true}/>)} 
     </div>
 
   )
