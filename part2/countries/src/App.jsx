@@ -7,7 +7,6 @@ const App = () => {
   const [countries, setCountries] = useState([])
   const [filterValue, setFilterValue] = useState(null)
 
-
   useEffect(() => {
     if (countries.length === 0) {
       CountriesService
@@ -34,9 +33,6 @@ const App = () => {
     }
     return cMatch
   }
-
-  console.log('Countries', countriesToShow);
-  console.log('ContriesTwo', countries)
 
   return (
     <div>
