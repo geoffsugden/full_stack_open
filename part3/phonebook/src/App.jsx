@@ -1,0 +1,42 @@
+import { useState, useEffect } from 'react'
+import Persons from './components/Persons'
+import PersonForm from './components/PersonForm'
+import Filter from './components/Filter'
+import Notifications from './components/Notification'
+import PhoneBookService from './services/phonebook'
+
+const App = () => {
+  const [persons, setPersons] = useState([]) 
+  const [filterValue, setFilterValue] = useState('')
+  const [message, setMessage] = useState({
+    messageValue: null, 
+    messageType: null
+  })
+
+  useEffect(() => {
+    PhoneBookService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
+      })
+  }, [])
+
+
+  return (
+    <div>
+      <h2>Phonebook</h2>
+      <Notifications.Notification message={message} />
+      <Filter setFilter={setFilterValue} />
+      
+      <h3>Add a new person</h3>
+      <PersonForm addPerson={setPersons} persons={persons} setMessage={setMessage} />
+
+      <h2>Numbers</h2>
+      <Persons persons={persons} setPersons={setPersons} filterValue={filterValue} setMessage={setMessage} />
+
+    </div>
+
+  )
+}
+
+export default App
