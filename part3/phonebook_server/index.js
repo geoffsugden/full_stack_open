@@ -1,12 +1,9 @@
 const express = require('express')
 const morgan = require('morgan')
-const cors = require('cors')
 const app = express()
 
-
 app.use(express.json())
-
-app.use(cors())
+app.use(express.static('dist'))
 
 morgan.token('body', (req,res) => JSON.stringify(req.body))
 
@@ -98,7 +95,7 @@ const generateId = () => {
     if (persons.some(person => person.id === id)) {
         return generateId()
     }
-    return id
+    return id.toString()
 }
 
 const PORT = process.env.PORT || 3001

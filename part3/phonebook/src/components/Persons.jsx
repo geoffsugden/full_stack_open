@@ -3,21 +3,19 @@ import Notifications from './Notification'
 
 const Persons = ({persons, setPersons, filterValue, setMessage}) => {
   
-  const personsToShow = filterValue.length ? persons.filter(person => person.name.toLowerCase().includes(filterValue.toLowerCase())) : persons
-  
   const removePerson = (id) => {
     const person = persons.find(person => person.id === id)
     const result = window.confirm(`Delete ${person.name}`)
     if (result) {
       PhoneBookService.delRecord(id) 
-        .then(response => setPersons(persons.filter(person => person.id !== response.id)))
+        .then(response => setPersons(persons.filter(person => person.id !== id)))
         .then(() => Notifications.handleMessage({
           setMessage:setMessage, 
           mText:`Person ${person.name} has been deleted`, 
           mType:'message', 
           timeout:3000
         }))
-        .then(setPersons(personsToShow.filter(person => person.id !== id)))
+        .then(() => setPersons(persons.filter(person => person.id !== id)))
         .catch(
           error => {
             Notifications.NotificationhandleMessage({
@@ -26,12 +24,15 @@ const Persons = ({persons, setPersons, filterValue, setMessage}) => {
               mType: 'error', 
               timeout:3000
             })
-            setPersons(personsToShow.filter(person => person.id !== id))
+            setPersons(persons.filter(person => person.id !== id))
           }
         )
     }
 
   }
+
+  const personsToShow = filterValue.length ? persons.filter(person => person.name.toLowerCase().includes(filterValue.toLowerCase())) : persons
+  
   return (
     <div>
       {personsToShow.map(person => <div key={person.name}>
