@@ -8,12 +8,10 @@ if(process.argv.length < 3) {
 const db_user = 'geoffsugden_db_user'
 const db_password = process.argv[2]
 const db_name = 'noteApp'
-
 const url = `mongodb://${db_user}:${db_password}@ac-koqzjed-shard-00-00.fwcdt3n.mongodb.net:27017,ac-koqzjed-shard-00-01.fwcdt3n.mongodb.net:27017,ac-koqzjed-shard-00-02.fwcdt3n.mongodb.net:27017/${db_name}?ssl=true&replicaSet=atlas-12ibee-shard-0&authSource=admin&appName=Cluster0`
 
 mongoose.set('strictQuery', false)
-
-// mongoose.connect(url, {family : 4})
+mongoose.connect(url, {family : 4})
 
 const noteSchema = new mongoose.Schema({
     content: String,
@@ -21,33 +19,6 @@ const noteSchema = new mongoose.Schema({
 })
 
 const Note = mongoose.model('Note', noteSchema)
-
-let notes = [
-  {
-    content: "Browser can execute only JavaScript",
-    important: false
-  },
-  {
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true
-  }
-]
-
-
-const main = async () => {
-    try { 
-        await mongoose.connect(url, {family: 4})
-        await Note.insertMany(notes)
-    } catch (error) {
-        console.log('Error seeding Database', error);
-    } finally {
-        await mongoose.connection.close()
-    }
-      
-}
-
-main()
-
 
 // Note.find({}).then(result => {
 //     result.forEach(note => {
