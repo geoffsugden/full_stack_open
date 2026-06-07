@@ -14,7 +14,7 @@ mongoose.connect(url, {family: 4})
     })
 
 const phonebookSchema = new mongoose.Schema({
-    name: {type: String, unique: true, required: true },
+    name: String,
     number: String,
 }, { collection: 'phonebook'})
 

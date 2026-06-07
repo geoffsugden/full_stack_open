@@ -1,9 +1,11 @@
 require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
 const Phonebook = require('./models/phonebook')
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 app.use(express.static('dist'))
 
@@ -23,8 +25,7 @@ app.get('/api/persons', (request,response) => {
 })
 
 app.get('/api/persons/:id', (request,response, next) => {
-    const id = request.params.id
-    Phonebook.findOne({_id: id})
+    Phonebook.findById(request.params.id)
         .then(person => {
             if (person) {
                 response.json(person) 
@@ -53,36 +54,39 @@ app.delete('/api/persons/:id', (request,response,next) => {
 })
 
 app.post('/api/persons', (request,response,next) => {
-    const {p_name, p_number} = request.body
+    const {name, number} = request.body
     
-    if (!p_name || !p_number) {
+    if (!name || !number) {
         return response.status(409).json({
             error: 'name and number are required fields.'
         })
     }
 
     const person = new Phonebook({
-        name: p_name,
-        number: p_number,
+        name: name,
+        number: number,
     })
-
-    person.save(newPerson)
+    
+    person.save()
         .then(person => {
             response.json(person)    
         })
         .catch(error => next(error))
+
 })
 
-app.put('/api/persons/id', (request, response, next) => {
-    const {p_name, p_number} = request.body
+app.put('/api/persons/:id', (request, response, next) => {
+    const {name, number} = request.body
 
+    console.log('We get here? Probably not');
+    
     Phonebook.findById(request.params.id)
         .then(person => { 
             if(!person) { 
                 return response.status(404).end()
             }
-            person.name = p_name
-            person.number = p_number
+            person.name = name
+            person.number = number
 
             return person.save().then(updatedPerson => {
                 response.json(updatedPerson)
@@ -105,6 +109,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
-    
+    console.log(`Server running on ${PORT}`);  
 })
