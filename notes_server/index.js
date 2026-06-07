@@ -93,7 +93,7 @@ const errorHandler = (error, request, response, next) => {
     console.error(error.message)
 
     if (error.name === 'CastError') {
-        return response.status(400).send({ error: 'malformed id'})
+        return response.status(400).send({ error: 'malformed id'}).end()
     }
     next(error)
 }

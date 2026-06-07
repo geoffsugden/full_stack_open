@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "server": "json-server -p 3001 db.json",
     "build:ui": "rm -rf dist && cd ../phonebook && npm run build && cp -r dist ../phonebook_server",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+    "deploy:full": "npm run build:ui && git add . && git commit -a -m uibuild && git push"
   },
   "dependencies": {
     "axios": "^1.16.1",

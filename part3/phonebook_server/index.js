@@ -19,9 +19,10 @@ app.get('/api/persons', (request,response) => {
     Phonebook.find({}).then(persons =>  {
         response.json(persons)
     })
+    .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request,response) => {
+app.get('/api/persons/:id', (request,response, next) => {
     const id = request.params.id
     Phonebook.findOne({_id: id})
         .then(person => {
@@ -31,58 +32,67 @@ app.get('/api/persons/:id', (request,response) => {
                 response.status(404).json({error: 'That is not a valid ID.'})
             }
         })
-        .catch(error => console.log('Error: ', error))
-        
+        .catch(error => next(error))        
 })
 
 app.get('/info', (request, response) => {
     const now = new Date()
     Phonebook.countDocuments()
         .then(countDocs => response.send(`<p>Phonebook has info for ${countDocs} people</p><p>${now.toString()}</p>`))
+        .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request,response) => {
+app.delete('/api/persons/:id', (request,response,next) => {
     const id = request.params.id
     Phonebook.deleteOne({_id: id})
         .then(deleted => 
             response.status(204).json({
                 message: `Deleted ${deleted.deletedCount} record`})
         )
+        .catch(error => next(error))
 })
 
-app.post('/api/persons', (request,response) => {
-    const body = request.body
+app.post('/api/persons', (request,response,next) => {
+    const {p_name, p_number} = request.body
     
-    if (!body.name) {
-        return response.status(400).json({
-            error: 'name missing'
+    if (!p_name || !p_number) {
+        return response.status(409).json({
+            error: 'name and number are required fields.'
         })
-    } else if (!body.number) {
-        return response.status(400).json({
-            error: 'name missing'
-        })
-    } 
+    }
 
-    const newPerson = new Phonebook({
-        name: body.name,
-        number: body.number,
+    const person = new Phonebook({
+        name: p_name,
+        number: p_number,
     })
 
-    newPerson.save(newPerson)
+    person.save(newPerson)
         .then(person => {
             response.json(person)    
         })
-        .catch(error => {
-                response.status(409).json({
-                    error: 'Person already exists in phonebook.'
-                })          
-                console.log('Error adding person: ', error);
-        })
+        .catch(error => next(error))
+})
 
+app.put('/api/persons/id', (request, response, next) => {
+    const {p_name, p_number} = request.body
+
+    Phonebook.findById(request.params.id)
+        .then(person => { 
+            if(!person) { 
+                return response.status(404).end()
+            }
+            person.name = p_name
+            person.number = p_number
+
+            return person.save().then(updatedPerson => {
+                response.json(updatedPerson)
+            })
+        })
+        .catch(error => next(error))
 })
 
 const errorHandler = (error, request, response, next) => {
-    console.error('This error brought to you by the phonebook error handler: ', error.message)
+    console.error('I\'m a little error: ', error.message)
 
     if (error.name === 'CastError') {
         return response.status(404).send({ error: 'malformed id'})
