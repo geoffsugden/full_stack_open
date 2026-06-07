@@ -2,9 +2,10 @@ require('dotenv').config()
 const express = require('express')
 const Note = require('./models/note')
 const { default: mongoose } = require('mongoose')
-
+const cors = require('cors')
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 app.use(express.static('dist'))
 
@@ -25,13 +26,23 @@ app.get('/api/notes/:id', (request, response) => {
     )
 })
 
+app.put('/api/notes/:id', (request,response) => {
+    const id = request.params.id
+    const body = request.body
+    
+    Note.findByIdAndUpdate(id, {important: body.important})
+        .then(updatedNote => { 
+            console.log('returnedNote', updatedNote),            
+            response.json(updatedNote) 
+        })
+})
+
 app.delete('/api/notes/:id', (request, response) =>{
     const id = request.params.id
     Note.deleteOne({_id: id}).then(deleted =>
-        console.log('Deleted', deleted.deletedcount)
+        console.log('Deleted', deleted.deletedCount)
     )
     response.status(204).end()
-
 })
 
 app.post('/api/notes', (request, response) => {
