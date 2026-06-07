@@ -79,8 +79,19 @@ app.post('/api/persons', (request,response) => {
                 console.log('Error adding person: ', error);
         })
 
-    
 })
+
+const errorHandler = (error, request, response, next) => {
+    console.error('This error brought to you by the phonebook error handler: ', error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(404).send({ error: 'malformed id'})
+    }
+    next(error)
+}
+
+// handler of requests that result in an error
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
