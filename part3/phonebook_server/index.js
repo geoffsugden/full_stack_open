@@ -1,5 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
+const Phonebook = require('./models/phonebook')
 const app = express()
 
 app.use(express.json())
@@ -9,57 +11,43 @@ morgan.token('body', (req,res) => JSON.stringify(req.body))
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))    
 
-let persons = [
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
 app.get('/', (request, response) => {
     response.send('<h1>Welcome to the Phonebook App</h1>')
 })
 
 app.get('/api/persons', (request,response) => {
-    response.json(persons)
+    Phonebook.find({}).then(persons =>  {
+        response.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (request,response) => {
     const id = request.params.id
-    const person = persons.find(person => person.id === id)
-    if(person) {
-        response.json(person)
-    } else {
-        response.statusMessage = `No entry for person ${id} exists.`
-        response.status(404).end()
-    }
+    Phonebook.findOne({_id: id})
+        .then(person => {
+            if (person) {
+                response.json(person) 
+            } else {
+                response.status(404).json({error: 'That is not a valid ID.'})
+            }
+        })
+        .catch(error => console.log('Error: ', error))
+        
 })
 
 app.get('/info', (request, response) => {
     const now = new Date()
-    response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${now.toString()}</p>`)
+    Phonebook.countDocuments()
+        .then(countDocs => response.send(`<p>Phonebook has info for ${countDocs} people</p><p>${now.toString()}</p>`))
 })
 
 app.delete('/api/persons/:id', (request,response) => {
     const id = request.params.id
-    persons = persons.filter(person => person.id !== id)
-    response.status(204).end()
+    Phonebook.deleteOne({_id: id})
+        .then(deleted => 
+            response.status(204).json({
+                message: `Deleted ${deleted.deletedCount} record`})
+        )
 })
 
 app.post('/api/persons', (request,response) => {
@@ -73,30 +61,26 @@ app.post('/api/persons', (request,response) => {
         return response.status(400).json({
             error: 'name missing'
         })
-    } else if (persons.some(person => person.name === body.name)) {
-        return response.status(409).json({
-            error: `Name ${body.name} already exists in the phonebook.`
-        })
-    }
+    } 
 
-    const person = {
+    const newPerson = new Phonebook({
         name: body.name,
         number: body.number,
-        id: generateId(),
-    }
+    })
 
-    persons = persons.concat(person)
+    newPerson.save(newPerson)
+        .then(person => {
+            response.json(person)    
+        })
+        .catch(error => {
+                response.status(409).json({
+                    error: 'Person already exists in phonebook.'
+                })          
+                console.log('Error adding person: ', error);
+        })
 
-    response.json(person)
+    
 })
-
-const generateId = () => {
-    const id = Math.floor(Math.random() * 1000000000)
-    if (persons.some(person => person.id === id)) {
-        return generateId()
-    }
-    return id.toString()
-}
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
