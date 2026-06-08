@@ -7,99 +7,99 @@ const app = express()
 app.use(express.json())
 app.use(express.static('dist'))
 
-morgan.token('body', (req,res) => JSON.stringify(req.body))
+morgan.token('body', (req) => JSON.stringify(req.body))
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))    
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 app.get('/', (request, response) => {
-    response.send('<h1>Welcome to the Phonebook App</h1>')
+  response.send('<h1>Welcome to the Phonebook App</h1>')
 })
 
-app.get('/api/persons', (request,response) => {
-    Phonebook.find({}).then(persons =>  {
-        response.json(persons)
-    })
+app.get('/api/persons', (request,response,next) => {
+  Phonebook.find({}).then(persons =>  {
+    response.json(persons)
+  })
     .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request,response, next) => {
-    Phonebook.findById(request.params.id)
-        .then(person => {
-            if (person) {
-                response.json(person) 
-            } else {
-                response.status(404).json({error: 'That is not a valid ID.'})
-            }
-        })
-        .catch(error => next(error))        
-}) 
+  Phonebook.findById(request.params.id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).json({ error: 'That is not a valid ID.' })
+      }
+    })
+    .catch(error => next(error))
+})
 
-app.get('/info', (request, response) => {
-    const now = new Date()
-    Phonebook.countDocuments()
-        .then(countDocs => response.send(`<p>Phonebook has info for ${countDocs} people</p><p>${now.toString()}</p>`))
-        .catch(error => next(error))
+app.get('/info', (request, response, next) => {
+  const now = new Date()
+  Phonebook.countDocuments()
+    .then(countDocs => response.send(`<p>Phonebook has info for ${countDocs} people</p><p>${now.toString()}</p>`))
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request,response,next) => {
-    const id = request.params.id
-    Phonebook.deleteOne({_id: id})
-        .then(deleted => 
-            response.status(204).json({
-                message: `Deleted ${deleted.deletedCount} record`})
-        )
-        .catch(error => next(error))  
+  const id = request.params.id
+  Phonebook.deleteOne({ _id: id })
+    .then(deleted =>
+      response.status(204).json({
+        message: `Deleted ${deleted.deletedCount} record` })
+    )
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request,response,next) => {
-    const {name, number} = request.body
-    
-    if (!name || !number) {
-        return response.status(409).json({
-            error: 'name and number are required fields.'
-        })
-    }
+  const { name, number } = request.body
 
-    const person = new Phonebook({
-        name: name,
-        number: number,
+  if (!name || !number) {
+    return response.status(409).json({
+      error: 'name and number are required fields.'
     })
-    
-    person.save()
-        .then(person => {
-            response.json(person)    
-        })
-        .catch(error => next(error))
+  }
+
+  const person = new Phonebook({
+    name: name,
+    number: number,
+  })
+
+  person.save()
+    .then(person => {
+      response.json(person)
+    })
+    .catch(error => next(error))
 
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-    const {name, number} = request.body
+  const { name, number } = request.body
 
-    Phonebook.findById(request.params.id)
-        .then(person => { 
-            if(!person) { 
-                return response.status(404).end()
-            }
-            person.name = name
-            person.number = number
+  Phonebook.findById(request.params.id)
+    .then(person => {
+      if(!person) {
+        return response.status(404).end()
+      }
+      person.name = name
+      person.number = number
 
-            return person.save()
-                .then(updatedPerson => {
-                    response.json(updatedPerson)
-                })
+      return person.save()
+        .then(updatedPerson => {
+          response.json(updatedPerson)
         })
-        .catch(error => next(error))
+    })
+    .catch(error => next(error))
 })
 
 const errorHandler = (error, request, response, next) => {
 
-    if (error.name === 'CastError') {
-        return response.status(404).send({ error: 'malformed id'})
-    } else if (error.name === 'ValidationError') {
-        return response.status(400).send({ error: error.message})
-    }
-    next(error)
+  if (error.name === 'CastError') {
+    return response.status(404).send({ error: 'malformed id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).send({ error: error.message })
+  }
+  next(error)
 }
 
 // handler of requests that result in an error
@@ -107,5 +107,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);  
+  console.log(`Server running on ${PORT}`)
 })
