@@ -27,19 +27,29 @@ const PersonForm = ({persons, addPerson, setMessage}) => {
       
       if (changeNumber) { 
         PhoneBookService.update(existingPerson.id, newPerson)
-          .then(response => addPerson(persons.filter(person => person.id !== existingPerson.id).concat(response)))
-          .then(() => Notifications.handleMessage({ setMessage:setMessage, mText: `Updated ${newPerson.name}`, mType: 'message', timeout: 5000}))
-          
+          .then(response => {
+            console.log('Server Response: ', response)
+            addPerson(persons.filter(person => person.id !== existingPerson.id).concat(response))
+            Notifications.handleMessage({ setMessage:setMessage, mText: `Updated ${newPerson.name}`, mType: 'message', timeout: 5000})
+          })
+          .catch(error => {
+            console.log('Caught error:', error.response.data.error)
+            
+            Notifications.handleMessage({setMessage:setMessage, mText: error.response.data.error, mType:'error', timeout:5000})
+          })
       } else {
-        PhoneBookService.update(existingPerson.id, existingPerson)
-          .then(response => Notifications.handleMessage({setMessage:setMessage, mText:`${response.name} already exists, no changes made`, mType:'message', timeout: 5000}))
+        Notifications.handleMessage({setMessage:setMessage, mText:`${response.name} already exists, no changes made`, mType:'message', timeout: 5000})
  
       }
     } else {
       PhoneBookService.create(newPerson)
-        .then(response => addPerson(persons.concat(response)))
-        .then(Notifications.handleMessage({setMessage:setMessage, mText: `Added ${newPerson.name}`, mType: 'message', timeout: 5000}))
-
+        .then(response => {
+          addPerson(persons.concat(response))
+          Notifications.handleMessage({setMessage:setMessage, mText: `Added ${newPerson.name}`, mType: 'message', timeout: 5000})
+        })
+        .catch(error => {
+          Notifications.handleMessage({setMessage:setMessage, mText: error.response.data.error, mType:'error', timeout:5000})
+        })
      }
     
     setNewName('')

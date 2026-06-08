@@ -32,7 +32,7 @@ app.get('/api/persons/:id', (request,response, next) => {
             }
         })
         .catch(error => next(error))        
-})
+}) 
 
 app.get('/info', (request, response) => {
     const now = new Date()
@@ -48,7 +48,7 @@ app.delete('/api/persons/:id', (request,response,next) => {
             response.status(204).json({
                 message: `Deleted ${deleted.deletedCount} record`})
         )
-        .catch(error => next(error))
+        .catch(error => next(error))  
 })
 
 app.post('/api/persons', (request,response,next) => {
@@ -76,8 +76,6 @@ app.post('/api/persons', (request,response,next) => {
 app.put('/api/persons/:id', (request, response, next) => {
     const {name, number} = request.body
 
-    console.log('We get here? Probably not');
-    
     Phonebook.findById(request.params.id)
         .then(person => { 
             if(!person) { 
@@ -86,18 +84,20 @@ app.put('/api/persons/:id', (request, response, next) => {
             person.name = name
             person.number = number
 
-            return person.save().then(updatedPerson => {
-                response.json(updatedPerson)
-            })
+            return person.save()
+                .then(updatedPerson => {
+                    response.json(updatedPerson)
+                })
         })
         .catch(error => next(error))
 })
 
 const errorHandler = (error, request, response, next) => {
-    console.error('I\'m a little error: ', error.message)
 
     if (error.name === 'CastError') {
         return response.status(404).send({ error: 'malformed id'})
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).send({ error: error.message})
     }
     next(error)
 }
