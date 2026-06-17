@@ -33,16 +33,12 @@ const mostBlogs = (blogs) => {
   if(blogs.length === 0) {
     return null
   }
-
   const countBlogs = lodash.countBy(blogs, 'author')
-
   const bloggerArray = Object.entries(countBlogs).map(([author, blogs]) => ({
     author,
     blogs,
   }))
-
   return lodash.maxBy(bloggerArray, 'blogs')
-
 }
 
 /**

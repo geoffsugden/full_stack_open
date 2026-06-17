@@ -1,213 +1,86 @@
-const { test, describe } = require('node:test')
+const { test, describe, after, beforeEach } = require('node:test')
+const mongoose = require('mongoose')
 const assert = require('node:assert')
+const app = require('../app')
+const supertest = require('supertest')
 const listhelper = require('../utils/list_helper')
+const helper = require('./testHelper')
+const Blog = require('../models/blog')
 
-describe('most blogs', () => {
-  const multipleBlogs = [
-    {
-      title: 'Zen Habits',
-      author: 'Leo Babauta',
-      url: 'https://zenhabits.net',
-      likes: 2,
-      id: '6a2a72f5f67bc01b6cf0205b'
-    },
-    {
-      title: 'Smitten Kitchen',
-      author: 'Deb Perelman',
-      url: 'https://smittenkitchen.com',
-      likes: 1,
-      id: '6a2a7399f67bc01b6cf0205c',
-      __v:0
-    },
-    {
-      title: 'Mr. Money Mustache',
-      author: 'Mr. Money Mustache',
-      url: 'https://www.mrmoneymustache.com',
-      likes: 5,
-      id: '6a2a73a8f67bc01b6cf0205d',
-      __v:0
-    },
-    {
-      title: 'Seth\'s Blog',
-      author: 'Seth Godin',
-      url: 'https://seths.blog',
-      likes: 8,
-      id: '6a2a73b7f67bc01b6cf0205e',
-      __v:0
-    },
-    {
-      title: 'Designer Daddy',
-      author: 'Brent Almond',
-      url: 'https://designerdaddy.com',
-      likes: 6,
-      id: '6a2a7491f67bc01b6cf02060',
-      __v:0
-    },
-    {
-      id: '5a422a851b54a676234d17f7',
-      title: 'React patterns',
-      author: 'Michael Chan',
-      url: 'https://reactpatterns.com/',
-      likes: 7,
-      __v: 0
-    },
-    {
-      id: '5a422aa71b54a676234d17f8',
-      title: 'Go To Statement Considered Harmful',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5,
-      __v: 0
-    },
-    {
-      id: '5a422b3a1b54a676234d17f9',
-      title: 'Canonical string reduction',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-      likes: 12,
-      __v: 0
-    },
-    {
-      id: '5a422b891b54a676234d17fa',
-      title: 'First class tests',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-      likes: 10,
-      __v: 0
-    },
-    {
-      id: '5a422ba71b54a676234d17fb',
-      title: 'TDD harms architecture',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-      likes: 0,
-      __v: 0
-    },
-    {
-      id: '5a422bc61b54a676234d17fc',
-      title: 'Type wars',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-      likes: 2,
-      __v: 0
-    }
-  ]
+const api = supertest(app)
 
-  const singleBlog = [{
-    title: 'Zen Habits',
-    author: 'Leo Babauta',
-    url: 'https://zenhabits.net',
-    likes: 2,
-    id: '6a2a72f5f67bc01b6cf0205b'
-  }]
+beforeEach(async () => {
+  await Blog.deleteMany({})
+  await Blog.insertMany(helper.initialBlogs)
+})
 
-  test('most blogs of empty list is null', () => {
+test('BlogsAPI - New Blog is saved', async() => {
+  const returnedBlog = await api
+    .post('/api/blogs')
+    .send(helper.otherBlogs[0])
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  assert.strictEqual(returnedBlog.body.title, helper.otherBlogs[0].title)
+  assert.strictEqual(returnedBlog.body.author, helper.otherBlogs[0].author)
+  assert.strictEqual(returnedBlog.body.likes, helper.otherBlogs[0].likes)
+  assert.strictEqual(returnedBlog.body.url, helper.otherBlogs[0].url)
+
+})
+
+test('BlogsAPI - Saving new Blog increases db by one', async() => {
+  const lenBefore = (await api.get('/api/blogs')).body.length
+  await api
+    .post('/api/blogs')
+    .send(helper.otherBlogs[0])
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const lenAfter = (await api.get('/api/blogs')).body.length
+
+  assert.strictEqual(lenAfter, lenBefore+1 )
+})
+
+test('BlogsAPI - Blogs id is named \'id\'', async() => {
+  const response = await api.get('/api/blogs')
+
+  assert(Object.hasOwn(response.body[0], 'id'))
+})
+
+test('BlogsAPI - all blogs are returned', async () => {
+  const response = await api.get('/api/blogs')
+
+  assert.strictEqual(response.body.length, helper.initialBlogs.length)
+})
+
+test('BlogsAPI - blogs are returned as json ', async () => {
+  await api
+    .get('/api/blogs')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+})
+
+
+describe('MostBlogs test group', () => {
+
+  test('MostBlogs of empty list is null', () => {
     const result = listhelper.mostBlogs([])
     assert.deepStrictEqual(result, null)
   })
 
-  test('most liked author of single blog is Leo Babauta', () => {
-    const result = listhelper.mostBlogs(singleBlog)
-    assert.deepStrictEqual(result, { author: 'Leo Babauta', blogs: 1 })
+  test('MostBlogs author of single blog is Michael Chan', () => {
+    const result = listhelper.mostBlogs([helper.initialBlogs[0]])
+    assert.deepStrictEqual(result, { author: 'Michael Chan', blogs: 1 })
   })
 
-  test('most blogs from on author is Robert C. Martin', () => {
-    const result = listhelper.mostBlogs(multipleBlogs)
+  test('MostBlogs from on author is Robert C. Martin', () => {
+    const result = listhelper.mostBlogs(helper.initialBlogs)
     assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 })
   })
 })
 
 
 describe('most liked author', () => {
-  const multipleBlogs = [
-    {
-      title: 'Zen Habits',
-      author: 'Leo Babauta',
-      url: 'https://zenhabits.net',
-      likes: 2,
-      id: '6a2a72f5f67bc01b6cf0205b'
-    },
-    {
-      title: 'Smitten Kitchen',
-      author: 'Deb Perelman',
-      url: 'https://smittenkitchen.com',
-      likes: 1,
-      id: '6a2a7399f67bc01b6cf0205c',
-      __v:0
-    },
-    {
-      title: 'Mr. Money Mustache',
-      author: 'Mr. Money Mustache',
-      url: 'https://www.mrmoneymustache.com',
-      likes: 5,
-      id: '6a2a73a8f67bc01b6cf0205d',
-      __v:0
-    },
-    {
-      title: 'Seth\'s Blog',
-      author: 'Seth Godin',
-      url: 'https://seths.blog',
-      likes: 8,
-      id: '6a2a73b7f67bc01b6cf0205e',
-      __v:0
-    },
-    {
-      title: 'Designer Daddy',
-      author: 'Brent Almond',
-      url: 'https://designerdaddy.com',
-      likes: 6,
-      id: '6a2a7491f67bc01b6cf02060',
-      __v:0
-    },
-    {
-      id: '5a422a851b54a676234d17f7',
-      title: 'React patterns',
-      author: 'Michael Chan',
-      url: 'https://reactpatterns.com/',
-      likes: 7,
-      __v: 0
-    },
-    {
-      id: '5a422aa71b54a676234d17f8',
-      title: 'Go To Statement Considered Harmful',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5,
-      __v: 0
-    },
-    {
-      id: '5a422b3a1b54a676234d17f9',
-      title: 'Canonical string reduction',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-      likes: 12,
-      __v: 0
-    },
-    {
-      id: '5a422b891b54a676234d17fa',
-      title: 'First class tests',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-      likes: 10,
-      __v: 0
-    },
-    {
-      id: '5a422ba71b54a676234d17fb',
-      title: 'TDD harms architecture',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-      likes: 0,
-      __v: 0
-    },
-    {
-      id: '5a422bc61b54a676234d17fc',
-      title: 'Type wars',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-      likes: 2,
-      __v: 0
-    }
-  ]
 
   const singleBlog = [{
     title: 'Zen Habits',
@@ -229,7 +102,7 @@ describe('most liked author', () => {
   })
 
   test('most liked author of all blogs is Edsger W. Dijkstra', () => {
-    const result = listhelper.mostLikes(multipleBlogs)
+    const result = listhelper.mostLikes(helper.initialBlogs)
     assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', likes: 17 })
   })
 })
@@ -483,4 +356,8 @@ test('dummy returns one', () => {
 
   const result = listhelper.dummy(blogs)
   assert.strictEqual(result, 1)
+})
+
+after(async () => {
+  await mongoose.connection.close()
 })
