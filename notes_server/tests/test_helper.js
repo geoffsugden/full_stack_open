@@ -12,6 +12,19 @@ const initialNotes = [
   }
 ]
 
+const initialUsers = [
+  {
+    username: 'root',
+    name: 'Superuser',
+    password: 'testPassword'
+  },
+  {
+    username: 'gds48',
+    name: 'Geoff Sugden',
+    password: 'testPassword'
+  }
+]
+
 const nonExistingId = async () => {
   const note = new Note({ content: 'willremovethissoon' })
   await note.save()
@@ -30,6 +43,11 @@ const usersInDb = async () => {
   return users.map(user => user.toJSON())
 }
 
+const populateUsers = async() => {
+  await User.deleteMany()
+  await User.insertMany(initialUsers)
+}
+
 module.exports = {
-  initialNotes, nonExistingId, notesInDb, usersInDb
+  initialNotes, nonExistingId, notesInDb, usersInDb, populateUsers
 }

@@ -62,9 +62,13 @@ describe('when there is initially some notes saved', () => {
 
   describe('addition of a new note', () => {
     test('succeeds with valid data', async () => {
+      await helper.populateUsers()
+      const dbUsers = await helper.usersInDb()
+      const userId = dbUsers[0].id
       const newNote = {
         content: 'async/await simplifies making async calls',
         important: true,
+        userId: userId
       }
 
       await api
