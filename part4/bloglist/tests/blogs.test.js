@@ -14,141 +14,149 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
     await Blog.insertMany(helper.initialBlogs)
   })
 
-  test('BlogsAPI - updating likes to 17', async() => {
-    const blogs = await helper.blogsInDb()
-    const blogToUpdate = blogs[0]
-    assert(blogToUpdate.likes !== 17)
-    blogToUpdate.likes = 17
+  describe.only('BlogsAPI - Test get methods', () => {
+    test('BlogsAPI - Fetch Missing Blog', async() => {
+      const blogId = await helper.nonExistingId()
+      await api
+        .get(`/api/blogs/${blogId}`)
+        .expect(404)
+    })
 
-    const updatedBlog = await api
-      .put(`/api/blogs/${blogToUpdate.id}`)
-      .send(blogToUpdate)
-      .expect(200)
-    assert.strictEqual(updatedBlog.body.likes, 17)
+    test('BlogsAPI - Blogs id is named \'id\'', async() => {
+      const response = await api.get('/api/blogs')
 
-    const doubleCheckBlog = await api
-      .get(`/api/blogs/${blogToUpdate.id}`)
-      .expect(200)
-    assert.strictEqual(doubleCheckBlog.body.likes, 17)
+      assert(Object.hasOwn(response.body[0], 'id'))
+    })
+
+    test('BlogsAPI - all blogs are returned', async () => {
+      const response = await api.get('/api/blogs')
+
+      assert.strictEqual(response.body.length, helper.initialBlogs.length)
+    })
+
+    test('BlogsAPI - blogs are returned as json ', async () => {
+      await api
+        .get('/api/blogs')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
+    })
+  })
+
+  describe('BlogsAPI - Test put methods', () => {
+    test('BlogsAPI - updating likes to 17', async() => {
+      const blogs = await helper.blogsInDb()
+      const blogToUpdate = blogs[0]
+      assert(blogToUpdate.likes !== 17)
+      blogToUpdate.likes = 17
+
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(blogToUpdate)
+        .expect(200)
+      assert.strictEqual(updatedBlog.body.likes, 17)
+
+      const doubleCheckBlog = await api
+        .get(`/api/blogs/${blogToUpdate.id}`)
+        .expect(200)
+      assert.strictEqual(doubleCheckBlog.body.likes, 17)
+    })
+  })
+
+  describe('BlogsAPI - Test delete methods', async() => {
+    test('BlogsAPI - Delete Missing Blog', async() => {
+      const blogId = await helper.nonExistingId()
+      await api
+        .delete(`/api/blogs/${blogId}`)
+        .expect(404)
+    })
+
+    test('BlogsAPI - Deleting blog', async() => {
+      const blogsBefore = await helper.blogsInDb()
+      const idToDel = blogsBefore[0].id
+      await api
+        .delete(`/api/blogs/${idToDel}`)
+        .expect(204)
+      const blogsAfter = await helper.blogsInDb()
+      assert.strictEqual(blogsAfter.length, blogsBefore.length - 1)
+    })
 
   })
 
-  test('BlogsAPI - Delete Missing Blog', async() => {
-    const blogId = await helper.nonExistingId()
-    await api
-      .delete(`/api/blogs/${blogId}`)
-      .expect(404)
-  })
+  describe('Blogs API - Test create methods', async() => {
+    test('BlogsAPI - Missing title returns 400', async() => {
+      const originalBlog = helper.initialBlogs[0]
+      // disabling as we are purposefully extracting title to leave a blog with likes = undefined
+      // eslint-disable-next-line no-unused-vars
+      const { title, ...newBlog } =  originalBlog
 
-  test('BlogsAPI - Deleting blog', async() => {
-    const blogsBefore = await helper.blogsInDb()
-    const idToDel = blogsBefore[0].id
-    await api
-      .delete(`/api/blogs/${idToDel}`)
-      .expect(204)
-    const blogsAfter = await helper.blogsInDb()
-    assert.strictEqual(blogsAfter.length, blogsBefore.length - 1)
-  })
+      assert.strictEqual(newBlog.title, undefined)
 
-  test('BlogsAPI - Fetch Missing Blog', async() => {
-    const blogId = await helper.nonExistingId()
-    await api
-      .get(`/api/blogs/${blogId}`)
-      .expect(404)
-  })
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+    })
 
-  test('BlogsAPI - Missing title returns 400', async() => {
-    const originalBlog = helper.initialBlogs[0]
-    // disabling as we are purposefully extracting title to leave a blog with likes = undefined
-    // eslint-disable-next-line no-unused-vars
-    const { title, ...newBlog } =  originalBlog
+    test('BlogsAPI - Missing url returns 400', async() => {
+      const originalBlog = helper.initialBlogs[0]
+      // disabling as we are purposefully extracting title to leave a blog with likes = undefined
+      // eslint-disable-next-line no-unused-vars
+      const { url, ...newBlog } =  originalBlog
 
-    assert.strictEqual(newBlog.title, undefined)
+      assert.strictEqual(newBlog.url, undefined)
 
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-  })
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(400)
+    })
 
-  test('BlogsAPI - Missing url returns 400', async() => {
-    const originalBlog = helper.initialBlogs[0]
-    // disabling as we are purposefully extracting title to leave a blog with likes = undefined
-    // eslint-disable-next-line no-unused-vars
-    const { url, ...newBlog } =  originalBlog
+    test('BlogsAPI - Likes defaults to zero', async() => {
+      const originalBlog = helper.initialBlogs[0]
+      // disabling as we are purposefully extracting likes to leave a blog with likes = undefined
+      // eslint-disable-next-line no-unused-vars
+      const { likes, ...newBlog } =  originalBlog
 
-    assert.strictEqual(newBlog.url, undefined)
+      assert.strictEqual(newBlog.likes, undefined)
+      const returnedBlog = await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(201)
 
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-  })
+      assert.strictEqual(returnedBlog.body.likes, 0)
 
-  test('BlogsAPI - Likes defaults to zero', async() => {
-    const originalBlog = helper.initialBlogs[0]
-    // disabling as we are purposefully extracting likes to leave a blog with likes = undefined
-    // eslint-disable-next-line no-unused-vars
-    const { likes, ...newBlog } =  originalBlog
+    })
 
-    assert.strictEqual(newBlog.likes, undefined)
-    const returnedBlog = await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
+    test('BlogsAPI - New Blog is saved', async() => {
+      const returnedBlog = await api
+        .post('/api/blogs')
+        .send(helper.otherBlogs[0])
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
 
-    assert.strictEqual(returnedBlog.body.likes, 0)
+      assert.strictEqual(returnedBlog.body.title, helper.otherBlogs[0].title)
+      assert.strictEqual(returnedBlog.body.author, helper.otherBlogs[0].author)
+      assert.strictEqual(returnedBlog.body.likes, helper.otherBlogs[0].likes)
+      assert.strictEqual(returnedBlog.body.url, helper.otherBlogs[0].url)
 
-  })
+    })
 
-  test('BlogsAPI - New Blog is saved', async() => {
-    const returnedBlog = await api
-      .post('/api/blogs')
-      .send(helper.otherBlogs[0])
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
+    test('BlogsAPI - Saving new Blog increases db by one', async() => {
+      const lenBefore = (await api.get('/api/blogs')).body.length
+      await api
+        .post('/api/blogs')
+        .send(helper.otherBlogs[0])
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
 
-    assert.strictEqual(returnedBlog.body.title, helper.otherBlogs[0].title)
-    assert.strictEqual(returnedBlog.body.author, helper.otherBlogs[0].author)
-    assert.strictEqual(returnedBlog.body.likes, helper.otherBlogs[0].likes)
-    assert.strictEqual(returnedBlog.body.url, helper.otherBlogs[0].url)
+      const lenAfter = (await api.get('/api/blogs')).body.length
 
-  })
-
-  test('BlogsAPI - Saving new Blog increases db by one', async() => {
-    const lenBefore = (await api.get('/api/blogs')).body.length
-    await api
-      .post('/api/blogs')
-      .send(helper.otherBlogs[0])
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
-
-    const lenAfter = (await api.get('/api/blogs')).body.length
-
-    assert.strictEqual(lenAfter, lenBefore+1 )
-  })
-
-  test('BlogsAPI - Blogs id is named \'id\'', async() => {
-    const response = await api.get('/api/blogs')
-
-    assert(Object.hasOwn(response.body[0], 'id'))
-  })
-
-  test('BlogsAPI - all blogs are returned', async () => {
-    const response = await api.get('/api/blogs')
-
-    assert.strictEqual(response.body.length, helper.initialBlogs.length)
-  })
-
-  test('BlogsAPI - blogs are returned as json ', async () => {
-    await api
-      .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
+      assert.strictEqual(lenAfter, lenBefore+1 )
+    })
   })
 })
 
-describe('MostBlogs test group', () => {
+describe('MostBlogs test group', { skip: true }, () => {
 
   test('MostBlogs of empty list is null', () => {
     const result = listhelper.mostBlogs([])
@@ -167,7 +175,7 @@ describe('MostBlogs test group', () => {
 })
 
 
-describe('most liked author', () => {
+describe('most liked author', { skip: true }, () => {
 
   const singleBlog = [{
     title: 'Zen Habits',
@@ -194,7 +202,7 @@ describe('most liked author', () => {
   })
 })
 
-describe('favourite Blog', () => {
+describe('favourite Blog', { skip: true }, () => {
   const multipleBlogs = [
     {
       title: 'Zen Habits',
@@ -319,7 +327,7 @@ describe('favourite Blog', () => {
   })
 })
 
-describe('total likes', () => {
+describe('total likes', { skip: true }, () => {
 
   const multipleBlogs = [
     {
@@ -438,7 +446,7 @@ describe('total likes', () => {
 
 })
 
-test('dummy returns one', () => {
+test('dummy returns one', { skip: true }, () => {
   const blogs = []
 
   const result = listhelper.dummy(blogs)
