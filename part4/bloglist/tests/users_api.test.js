@@ -1,0 +1,76 @@
+const { test, describe, after, beforeEach } = require('node:test')
+const mongoose = require('mongoose')
+const assert = require('node:assert')
+const app = require('../app')
+const supertest = require('supertest')
+const bcrypt = require('bcrypt')
+const helper = require('./testHelper')
+const User = require('../models/user')
+
+const api = supertest(app)
+describe.only('BlogsAPI User / Login tests', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const rootUser = new User({ username: 'root', passwordHash })
+
+    await rootUser.save()
+
+    for(const u of helper.initialUsers) {
+      const pwHash = await bcrypt.hash(u.password, 10)
+      const newUser = new User({ username: u.username, name: u.name, passwordHash: pwHash })
+      await newUser.save()
+    }
+  })
+
+  test('creation succeeds with a fresh username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'elm34',
+      name: 'Elmo Puppet',
+      password: 'whatAMuppet'
+    }
+
+    const usernamesAtStart = usersAtStart.map(u => u.username)
+    assert(!usernamesAtStart.includes(newUser.username))
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
+
+    const usernames = usersAtEnd.map(u => u.username)
+    assert(usernames.includes(newUser.username))
+  })
+
+  test('creation fails with an existing username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = new User(helper.initialUsers[0])
+
+    const usernamesAtStart = usersAtStart.map(u => u.username)
+    assert(usernamesAtStart.includes(newUser.username))
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(500)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+
+    const usernames = usersAtEnd.map(u => u.username)
+    assert(usernames.includes(newUser.username))
+  })
+
+})
+
+after(async () => {
+  await mongoose.connection.close()
+})

@@ -8,13 +8,14 @@ const helper = require('./testHelper')
 const Blog = require('../models/blog')
 
 const api = supertest(app)
+
 describe('BlogsAPI Tests - Confirm that api works as expected', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
   })
 
-  describe.only('BlogsAPI - Test get methods', () => {
+  describe('BlogsAPI - Test get methods', () => {
     test('BlogsAPI - Fetch Missing Blog', async() => {
       const blogId = await helper.nonExistingId()
       await api
@@ -208,88 +209,67 @@ describe('favourite Blog', { skip: true }, () => {
       title: 'Zen Habits',
       author: 'Leo Babauta',
       url: 'https://zenhabits.net',
-      likes: 2,
-      id: '6a2a72f5f67bc01b6cf0205b'
+      likes: 2
     },
     {
       title: 'Smitten Kitchen',
       author: 'Deb Perelman',
       url: 'https://smittenkitchen.com',
-      likes: 1,
-      id: '6a2a7399f67bc01b6cf0205c',
-      __v:0
+      likes: 1
     },
     {
       title: 'Mr. Money Mustache',
       author: 'Mr. Money Mustache',
       url: 'https://www.mrmoneymustache.com',
-      likes: 5,
-      id: '6a2a73a8f67bc01b6cf0205d',
-      __v:0
+      likes: 5
     },
     {
       title: 'Seth\'s Blog',
       author: 'Seth Godin',
       url: 'https://seths.blog',
-      likes: 8,
-      id: '6a2a73b7f67bc01b6cf0205e',
-      __v:0
+      likes: 8
     },
     {
       title: 'Designer Daddy',
       author: 'Brent Almond',
       url: 'https://designerdaddy.com',
-      likes: 6,
-      id: '6a2a7491f67bc01b6cf02060',
-      __v:0
+      likes: 6
     },
     {
-      id: '5a422a851b54a676234d17f7',
       title: 'React patterns',
       author: 'Michael Chan',
       url: 'https://reactpatterns.com/',
-      likes: 7,
-      __v: 0
+      likes: 7
     },
     {
-      id: '5a422aa71b54a676234d17f8',
       title: 'Go To Statement Considered Harmful',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5,
-      __v: 0
+      likes: 5
     },
     {
-      id: '5a422b3a1b54a676234d17f9',
       title: 'Canonical string reduction',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-      likes: 12,
-      __v: 0
+      likes: 12
     },
     {
-      id: '5a422b891b54a676234d17fa',
       title: 'First class tests',
       author: 'Robert C. Martin',
       url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-      likes: 10,
-      __v: 0
+      likes: 10
     },
     {
-      id: '5a422ba71b54a676234d17fb',
       title: 'TDD harms architecture',
       author: 'Robert C. Martin',
       url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-      likes: 0,
-      __v: 0
+      likes: 0
     },
     {
-      id: '5a422bc61b54a676234d17fc',
       title: 'Type wars',
       author: 'Robert C. Martin',
       url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-      likes: 2,
-      __v: 0
+      likes: 2
     }
   ]
 
@@ -334,88 +314,67 @@ describe('total likes', { skip: true }, () => {
       title: 'Zen Habits',
       author: 'Leo Babauta',
       url: 'https://zenhabits.net',
-      likes: 2,
-      id: '6a2a72f5f67bc01b6cf0205b'
+      likes: 2
     },
     {
       title: 'Smitten Kitchen',
       author: 'Deb Perelman',
       url: 'https://smittenkitchen.com',
-      likes: 1,
-      id: '6a2a7399f67bc01b6cf0205c',
-      __v:0
+      likes: 1
     },
     {
       title: 'Mr. Money Mustache',
       author: 'Mr. Money Mustache',
       url: 'https://www.mrmoneymustache.com',
-      likes: 5,
-      id: '6a2a73a8f67bc01b6cf0205d',
-      __v:0
+      likes: 5
     },
     {
       title: 'Seth\'s Blog',
       author: 'Seth Godin',
       url: 'https://seths.blog',
-      likes: 8,
-      id: '6a2a73b7f67bc01b6cf0205e',
-      __v:0
+      likes: 8
     },
     {
       title: 'Designer Daddy',
       author: 'Brent Almond',
       url: 'https://designerdaddy.com',
-      likes: 6,
-      id: '6a2a7491f67bc01b6cf02060',
-      __v:0
+      likes: 6
     },
     {
-      id: '5a422a851b54a676234d17f7',
       title: 'React patterns',
       author: 'Michael Chan',
       url: 'https://reactpatterns.com/',
-      likes: 7,
-      __v: 0
+      likes: 3
     },
     {
-      id: '5a422aa71b54a676234d17f8',
       title: 'Go To Statement Considered Harmful',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5,
-      __v: 0
+      likes: 5
     },
     {
-      id: '5a422b3a1b54a676234d17f9',
       title: 'Canonical string reduction',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-      likes: 12,
-      __v: 0
+      likes: 12
     },
     {
-      id: '5a422b891b54a676234d17fa',
       title: 'First class tests',
       author: 'Robert C. Martin',
       url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-      likes: 10,
-      __v: 0
+      likes: 10
     },
     {
-      id: '5a422ba71b54a676234d17fb',
       title: 'TDD harms architecture',
       author: 'Robert C. Martin',
       url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-      likes: 0,
-      __v: 0
+      likes: 0
     },
     {
-      id: '5a422bc61b54a676234d17fc',
       title: 'Type wars',
       author: 'Robert C. Martin',
       url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-      likes: 2,
-      __v: 0
+      likes: 2
     }
   ]
 
@@ -423,8 +382,7 @@ describe('total likes', { skip: true }, () => {
     title: 'Zen Habits',
     author: 'Leo Babauta',
     url: 'https://zenhabits.net',
-    likes: 2,
-    id: '6a2a72f5f67bc01b6cf0205b'
+    likes: 2
   }]
 
   test('sum likes all blogs returns 58', () => {
