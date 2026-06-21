@@ -11,6 +11,11 @@ userRouter.get('/', async(request, response) => {
 userRouter.post('/', async (request, response) => {
   const { username, name, password } = request.body
 
+  if (!password || password.length < 3) {
+    // password requires length check before validation by mongoose as hash is passed instead of password
+    return response.status(400).json({ error: 'password must be minimum 3 characters long.' })
+  }
+
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(password, saltRounds)
 
