@@ -8,7 +8,7 @@ const helper = require('./testHelper')
 const User = require('../models/user')
 
 const api = supertest(app)
-describe.only('BlogsAPI User / Login tests', () => {
+describe('BlogsAPI User / Login tests', () => {
   beforeEach(async () => {
     await User.deleteMany({})
 
@@ -24,51 +24,64 @@ describe.only('BlogsAPI User / Login tests', () => {
     }
   })
 
-  test('creation succeeds with a fresh username', async () => {
-    const usersAtStart = await helper.usersInDb()
+  describe('User Retrieval Tests', () => {
+    test('All users retrieved from database', async() => {
+      const users = await api
+        .get('/api/users')
+        .expect(200)
+        .expect('Content-Type', /application\/json/)
 
-    const newUser = {
-      username: 'elm34',
-      name: 'Elmo Puppet',
-      password: 'whatAMuppet'
-    }
+      // numUsers should equal root + initial Users i.e. initialUsers + 1
+      assert.strictEqual(users.body.length, helper.initialUsers.length + 1)
 
-    const usernamesAtStart = usersAtStart.map(u => u.username)
-    assert(!usernamesAtStart.includes(newUser.username))
-
-    await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
-
-    const usersAtEnd = await helper.usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
-
-    const usernames = usersAtEnd.map(u => u.username)
-    assert(usernames.includes(newUser.username))
+    })
   })
+  describe('User Creation Tests', () => {
+    test('creation succeeds with a fresh username', async () => {
+      const usersAtStart = await helper.usersInDb()
 
-  test('creation fails with an existing username', async () => {
-    const usersAtStart = await helper.usersInDb()
+      const newUser = {
+        username: 'elm34',
+        name: 'Elmo Puppet',
+        password: 'whatAMuppet'
+      }
 
-    const newUser = new User(helper.initialUsers[0])
+      const usernamesAtStart = usersAtStart.map(u => u.username)
+      assert(!usernamesAtStart.includes(newUser.username))
 
-    const usernamesAtStart = usersAtStart.map(u => u.username)
-    assert(usernamesAtStart.includes(newUser.username))
+      await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
 
-    await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(500)
+      const usersAtEnd = await helper.usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length + 1)
 
-    const usersAtEnd = await helper.usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+      const usernames = usersAtEnd.map(u => u.username)
+      assert(usernames.includes(newUser.username))
+    })
 
-    const usernames = usersAtEnd.map(u => u.username)
-    assert(usernames.includes(newUser.username))
+    test('creation fails with an existing username', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = new User(helper.initialUsers[0])
+
+      const usernamesAtStart = usersAtStart.map(u => u.username)
+      assert(usernamesAtStart.includes(newUser.username))
+
+      await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(500)
+
+      const usersAtEnd = await helper.usersInDb()
+      assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+
+      const usernames = usersAtEnd.map(u => u.username)
+      assert(usernames.includes(newUser.username))
+    })
   })
-
 })
 
 after(async () => {
