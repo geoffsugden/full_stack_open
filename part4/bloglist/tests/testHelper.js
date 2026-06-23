@@ -75,14 +75,19 @@ const otherBlogs = [
 
 const initialUsers = [
   {
+    username: 'bbb66',
+    name: 'Big Bird',
+    password: 'BigAndYellow'
+  },
+  {
+    username: 'otg57',
+    name: 'Oscar the Grouch',
+    password: 'LivesInATrashCan'
+  },
+  {
     username: 'gds48',
     name: 'Geoff Sugden',
     password: 'testPassword'
-  },
-  {
-    username: 'mpj17',
-    name: 'Michael JasonSmith',
-    password: 'remembered123'
   }
 ]
 

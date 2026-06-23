@@ -83,7 +83,7 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
 
   })
 
-  describe('Blogs API - Test create methods', async() => {
+  describe('Blogs API - Test post methods', async() => {
     test('BlogsAPI - Missing title returns 400', async() => {
       const originalBlog = helper.initialBlogs[0]
       // disabling as we are purposefully extracting title to leave a blog with likes = undefined
@@ -139,7 +139,6 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       assert.strictEqual(returnedBlog.body.author, helper.otherBlogs[0].author)
       assert.strictEqual(returnedBlog.body.likes, helper.otherBlogs[0].likes)
       assert.strictEqual(returnedBlog.body.url, helper.otherBlogs[0].url)
-
     })
 
     test('BlogsAPI - Saving new Blog increases db by one', async() => {
