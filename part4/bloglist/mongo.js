@@ -3,6 +3,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const Blog = require('./models/blog')
 const User = require('./models/user')
+const jwt = require('jsonwebtoken')
 const logger = require('./utils/logger')
 const helper = require('./tests/testHelper')
 const bcrypt = require('bcrypt')
@@ -36,24 +37,21 @@ const doStuff = async () => {
 
   await User.insertMany(users)
 
-  const usersInDB = await User.find({ username: 'gds48' })
-  const user = usersInDB[0]
+  const user = await User.findOne({ username: 'gds48' })
 
-  const blogs = helper.initialBlogs.map(blog => {
-    return {
-      ...blog,
-      user: user.id
-    }
+  const userForToken = ({
+    username: user.username,
+    id: user._id
   })
 
-  await Blog.insertMany(blogs)
-
-  const blogsInDb = await Blog.find({})
-
-  const blogIds = blogsInDb.map(blog => blog.id)
-
-  user.blogs = blogIds
-  await user.save()
+  const token = jwt.sign(
+    userForToken,
+    process.env.SECRET,
+    { expiresIn: 30 }
+  )
+  console.log('==========================================================================')
+  console.log('Token', token)
+  console.log('==========================================================================')
 
   await mongoose.connection.close()
   process.exit(0)

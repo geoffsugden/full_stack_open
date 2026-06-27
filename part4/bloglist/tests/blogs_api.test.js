@@ -8,6 +8,7 @@ const helper = require('./testHelper')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const api = supertest(app)
 
@@ -25,12 +26,11 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
     })
     const users = await Promise.all(promises)
     await User.insertMany(users)
-    const usersInDB = await User.find({ username: 'gds48' })
-    const user = usersInDB[0]
+    const user = await User.findOne({ username: 'gds48' })
     const blogs = helper.initialBlogs.map(blog => {
       return {
         ...blog,
-        user: user.id
+        user: user._id.toString()
       }
     })
     await Blog.insertMany(blogs)
@@ -69,14 +69,17 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
   })
 
   describe('BlogsAPI - Test put methods', () => {
-    test.only('BlogsAPI - updating likes to 17', async() => {
+    test('BlogsAPI - updating likes to 17', async() => {
       const blogs = await helper.blogsInDb()
       const blogToUpdate = blogs[0]
       assert(blogToUpdate.likes !== 17)
       blogToUpdate.likes = 17
 
+      const token = await helper.getToken('gds48')
+
       const updatedBlog = await api
         .put(`/api/blogs/${blogToUpdate.id}`)
+        .set('Authorization', `Bearer ${token}`)
         .send(blogToUpdate)
         .expect(200)
       assert.strictEqual(updatedBlog.body.likes, 17)
@@ -86,24 +89,64 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
         .expect(200)
       assert.strictEqual(doubleCheckBlog.body.likes, 17)
     })
+
+    test('BlogsAPI - updating with incorrect user gives 401', async() => {
+      const blogs = await helper.blogsInDb()
+      const blogToUpdate = blogs[0]
+      const likesBefore = blogToUpdate.likes
+
+      const token = await helper.getToken('bbb66')
+
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(blogToUpdate)
+        .expect(401)
+      assert(updatedBlog.error.text.includes('blog listing can only be modified by it\'s creator'))
+
+      const doubleCheckBlog = await api
+        .get(`/api/blogs/${blogToUpdate.id}`)
+        .expect(200)
+      assert.strictEqual(doubleCheckBlog.body.likes, likesBefore)
+    })
   })
 
   describe('BlogsAPI - Test delete methods', () => {
     test('BlogsAPI - Delete Missing Blog', async() => {
       const blogId = await helper.nonExistingId()
+
+      const token = await helper.getToken('gds48')
       await api
         .delete(`/api/blogs/${blogId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(404)
     })
 
     test('BlogsAPI - Deleting blog', async() => {
       const blogsBefore = await helper.blogsInDb()
       const idToDel = blogsBefore[0].id
+
+      const token = await helper.getToken('gds48')
       await api
         .delete(`/api/blogs/${idToDel}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(204)
       const blogsAfter = await helper.blogsInDb()
       assert.strictEqual(blogsAfter.length, blogsBefore.length - 1)
+    })
+
+    test('BlogsAPI - Deleting blog with incorrect user', async() => {
+      const blogsBefore = await helper.blogsInDb()
+      const idToDel = blogsBefore[0].id
+
+      const token = await helper.getToken('bbb66')
+      const response = await api
+        .delete(`/api/blogs/${idToDel}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(401)
+      const blogsAfter = await helper.blogsInDb()
+      assert.strictEqual(blogsAfter.length, blogsBefore.length)
+      assert(response.error.text.includes('blog listing can only be deleted by creator'))
     })
 
   })
@@ -118,8 +161,10 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
 
       assert.strictEqual(newBlog.title, undefined)
 
+      const token = await helper.getToken('gds48')
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
     })
@@ -132,8 +177,11 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
 
       assert.strictEqual(newBlog.url, undefined)
 
+      const token = await helper.getToken('gds48')
+
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
     })
@@ -145,8 +193,11 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       const { likes, ...newBlog } =  originalBlog
 
       assert.strictEqual(newBlog.likes, undefined)
+
+      const token = await helper.getToken('gds48')
       const returnedBlog = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
 
@@ -155,8 +206,10 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
     })
 
     test('BlogsAPI - New Blog is saved', async() => {
+      const token = await helper.getToken('gds48')
       const returnedBlog = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(helper.otherBlogs[0])
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -169,8 +222,10 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
 
     test('BlogsAPI - Saving new Blog increases db by one', async() => {
       const lenBefore = (await api.get('/api/blogs')).body.length
+      const token = await helper.getToken('gds48')
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(helper.otherBlogs[0])
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -178,6 +233,16 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       const lenAfter = (await api.get('/api/blogs')).body.length
 
       assert.strictEqual(lenAfter, lenBefore+1 )
+    })
+
+    test('BlogsAPI - Saving new Blog fails with 401 if no user provided', async() => {
+      const response = await api
+        .post('/api/blogs')
+        .send(helper.otherBlogs[0])
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      assert(response.error.text.includes('invalid token'))
     })
   })
 })
