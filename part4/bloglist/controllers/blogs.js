@@ -1,16 +1,7 @@
-const jwt = require('jsonwebtoken')
 const blogsRouter = require('express').Router()
 
 const Blog = require('../models/blog')
 const User = require('../models/user')
-
-const getTokenFrom = request => {
-  const authorization = request.get('authorization')
-  if(authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
 
 blogsRouter.get('/',  async (request, response) => {
   const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
@@ -19,7 +10,7 @@ blogsRouter.get('/',  async (request, response) => {
 })
 
 blogsRouter.get('/:id', async (request, response) => {
-  const blog =  await Blog.findById(request.params.id)
+  const blog = await Blog.findById(request.params.id)
   if(blog) {
     response.json(blog)
   } else {
@@ -29,11 +20,7 @@ blogsRouter.get('/:id', async (request, response) => {
 
 blogsRouter.post('/', async (request, response) => {
   const body = request.body
-  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-  if(!decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' })
-  }
-  const user = await User.findById(decodedToken.id)
+  const user = await User.findById(request.userId)
 
   const blog = new Blog({
     title: body.title,
@@ -51,12 +38,13 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.put('/:id', async (request, response) => {
   const { title, author, url, likes } = request.body
-
   const blog = await Blog.findById(request.params.id)
 
   if(!blog) {
     return response.status(404).end()
-  } else {
+  } else if (blog.user.toString() !== request.userId) {
+    return response.status(401).json({ error: 'blog listing can only be modified by it\'s creator' })
+  }else {
     blog.title = title
     blog.author = author
     blog.url = url
@@ -68,11 +56,19 @@ blogsRouter.put('/:id', async (request, response) => {
 })
 
 blogsRouter.delete('/:id', async (request, response) => {
-  const retval = await Blog.findByIdAndDelete(request.params.id)
-  if(retval) {
-    response.status(204).end()
-  } else {
+  const blogId = request.params.id
+  const blog = await Blog.findById(blogId)
+  if(!blog) {
     response.status(404).end()
+  } else if (!(blog.user.toString() === request.userId)) {
+    response.status(401).json({ error: 'blog listing can only be deleted by creator.' })
+  } else {
+    const deleteSuccesful = await Blog.findByIdAndDelete(blogId)
+    if(deleteSuccesful) {
+      response.status(204).end()
+    } else {
+      response.status(404).end()
+    }
   }
 })
 

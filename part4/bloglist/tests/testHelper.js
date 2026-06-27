@@ -7,7 +7,6 @@ const initialBlogs = [
     author: 'Michael Chan',
     url: 'https://reactpatterns.com/',
     likes: 7,
-    user: '6a3cf33fb5c6a2619ca424ca',
     id: '6a3cf52c65b8846be995e13b'
   },
   {
@@ -15,7 +14,6 @@ const initialBlogs = [
     author: 'Edsger W. Dijkstra',
     url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
     likes: 5,
-    user: '6a3cf33fb5c6a2619ca424ca',
     id: '6a3cf52c65b8846be995e13c'
   },
   {
@@ -23,7 +21,6 @@ const initialBlogs = [
     author: 'Edsger W. Dijkstra',
     url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
     likes: 12,
-    user: '6a3cf33fb5c6a2619ca424c8',
     id: '6a3cf52c65b8846be995e13d'
   },
   {
@@ -31,7 +28,6 @@ const initialBlogs = [
     author: 'Robert C. Martin',
     url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.html',
     likes: 10,
-    user: '6a3cf33fb5c6a2619ca424c9',
     id: '6a3cf52c65b8846be995e13e'
   },
   {
@@ -39,7 +35,6 @@ const initialBlogs = [
     author: 'Robert C. Martin',
     url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
     likes: 0,
-    user: '6a3cf33fb5c6a2619ca424c9',
     id: '6a3cf52c65b8846be995e13f'
   },
   {
@@ -47,7 +42,6 @@ const initialBlogs = [
     author: 'Robert C. Martin',
     url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
     likes: 2,
-    user: '6a3cf33fb5c6a2619ca424c8',
     id: '6a3cf52c65b8846be995e140'
   }
 ]
@@ -99,103 +93,17 @@ const initialUsers = [
   {
     username: 'bbb66',
     name: 'Big Bird',
-    password: 'testPassword',
-    blogs: [
-      {
-        title: 'Canonical string reduction',
-        author: 'Edsger W. Dijkstra',
-        url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-        likes: 12,
-        id: '6a3cf52c65b8846be995e13d'
-      },
-      {
-        title: 'Type wars',
-        author: 'Robert C. Martin',
-        url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-        likes: 2,
-        id: '6a3cf52c65b8846be995e140'
-      },
-      {
-        title: 'Zen Habits',
-        author: 'Leo Babauta',
-        url: 'https://zenhabits.net',
-        likes: 2,
-        id: '6a3cf6bd0a6973b0c9a3022e'
-      }
-    ],
-    id: '6a3cf33fb5c6a2619ca424c8'
+    password: 'testPassword'
   },
   {
     username: 'otg57',
     name: 'Oscar the Grouch',
-    password: 'testPassword',
-    blogs: [
-      {
-        title: 'First class tests',
-        author: 'Robert C. Martin',
-        url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.html',
-        likes: 10,
-        id: '6a3cf52c65b8846be995e13e'
-      },
-      {
-        title: 'TDD harms architecture',
-        author: 'Robert C. Martin',
-        url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-        likes: 0,
-        id: '6a3cf52c65b8846be995e13f'
-      },
-      {
-        title: 'Smitten Kitchen',
-        author: 'Deb Perelman',
-        url: 'https://smittenkitchen.com',
-        likes: 1,
-        id: '6a3cf6bd0a6973b0c9a3022f'
-      },
-      {
-        title: 'Designer Daddy',
-        author: 'Brent Almond',
-        url: 'https://designerdaddy.com',
-        likes: 6,
-        id: '6a3cf6bd0a6973b0c9a30232'
-      }
-    ],
-    id: '6a3cf33fb5c6a2619ca424c9'
+    password: 'testPassword'
   },
   {
     username: 'gds48',
     name: 'Geoff Sugden',
-    password: 'testPassword',
-    blogs: [
-      {
-        title: 'React patterns',
-        author: 'Michael Chan',
-        url: 'https://reactpatterns.com/',
-        likes: 7,
-        id: '6a3cf52c65b8846be995e13b'
-      },
-      {
-        title: 'Go To Statement Considered Harmful',
-        author: 'Edsger W. Dijkstra',
-        url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-        likes: 5,
-        id: '6a3cf52c65b8846be995e13c'
-      },
-      {
-        title: 'Mr. Money Mustache',
-        author: 'Mr. Money Mustache',
-        url: 'https://www.mrmoneymustache.com',
-        likes: 5,
-        id: '6a3cf6bd0a6973b0c9a30230'
-      },
-      {
-        title: 'Seth\'s Blog',
-        author: 'Seth Godin',
-        url: 'https://seths.blog',
-        likes: 8,
-        id: '6a3cf6bd0a6973b0c9a30231'
-      }
-    ],
-    id: '6a3cf33fb5c6a2619ca424ca'
+    password: 'testPassword'
   }
 ]
 

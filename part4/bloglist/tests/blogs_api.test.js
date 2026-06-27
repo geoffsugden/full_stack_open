@@ -13,20 +13,31 @@ const api = supertest(app)
 
 describe('BlogsAPI Tests - Confirm that api works as expected', () => {
   beforeEach(async () => {
+    await Blog.deleteMany({})
     await User.deleteMany({})
 
-    const passwordHash = await bcrypt.hash('sekret', 10)
-    const rootUser = new User({ username: 'root', passwordHash })
-
-    await rootUser.save()
-
-    for(const u of helper.initialUsers) {
-      const pwHash = await bcrypt.hash(u.password, 10)
-      const newUser = new User({ username: u.username, name: u.name, passwordHash: pwHash })
-      await newUser.save()
-    }
-    await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
+    const promises = helper.initialUsers.map(async (user) => {
+      const hash = await bcrypt.hash(user.password, 10)
+      return {
+        ...user,
+        passwordHash: hash
+      }
+    })
+    const users = await Promise.all(promises)
+    await User.insertMany(users)
+    const usersInDB = await User.find({ username: 'gds48' })
+    const user = usersInDB[0]
+    const blogs = helper.initialBlogs.map(blog => {
+      return {
+        ...blog,
+        user: user.id
+      }
+    })
+    await Blog.insertMany(blogs)
+    const blogsInDb = await Blog.find({})
+    const blogIds = blogsInDb.map(blog => blog.id)
+    user.blogs = blogIds
+    await user.save()
   })
 
   describe('BlogsAPI - Test get methods', () => {
@@ -58,7 +69,7 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
   })
 
   describe('BlogsAPI - Test put methods', () => {
-    test('BlogsAPI - updating likes to 17', async() => {
+    test.only('BlogsAPI - updating likes to 17', async() => {
       const blogs = await helper.blogsInDb()
       const blogToUpdate = blogs[0]
       assert(blogToUpdate.likes !== 17)
@@ -98,7 +109,7 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
   })
 
   describe('Blogs API - Test post methods', () => {
-    test.only('BlogsAPI - Missing title returns 400', async() => {
+    test('BlogsAPI - Missing title returns 400', async() => {
       const originalBlog = helper.initialBlogs[0]
       // disabling as we are purposefully extracting title to leave a blog with likes = undefined
       // i.e. we want a valid title only.
