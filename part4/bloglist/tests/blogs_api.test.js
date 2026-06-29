@@ -8,7 +8,6 @@ const helper = require('./testHelper')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
 
 const api = supertest(app)
 
@@ -73,14 +72,13 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       const blogs = await helper.blogsInDb()
       const blogToUpdate = blogs[0]
       assert(blogToUpdate.likes !== 17)
-      blogToUpdate.likes = 17
-
-      const token = await helper.getToken('gds48')
+      // eslint-disable-next-line no-unused-vars
+      const { title, author, url, ...newBlog } = blogToUpdate
+      newBlog.likes = 17
 
       const updatedBlog = await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(blogToUpdate)
+        .put(`/api/blogs/${newBlog.id}`)
+        .send(newBlog)
         .expect(200)
       assert.strictEqual(updatedBlog.body.likes, 17)
 
@@ -90,7 +88,7 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       assert.strictEqual(doubleCheckBlog.body.likes, 17)
     })
 
-    test('BlogsAPI - updating with incorrect user gives 401', async() => {
+    test('BlogsAPI - updating with incorrect user gives 403', async() => {
       const blogs = await helper.blogsInDb()
       const blogToUpdate = blogs[0]
       const likesBefore = blogToUpdate.likes
@@ -101,8 +99,25 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
         .put(`/api/blogs/${blogToUpdate.id}`)
         .set('Authorization', `Bearer ${token}`)
         .send(blogToUpdate)
+        .expect(403)
+      assert(updatedBlog.error.text.includes('blog title, author and url can only be modified by its creator'))
+
+      const doubleCheckBlog = await api
+        .get(`/api/blogs/${blogToUpdate.id}`)
+        .expect(200)
+      assert.strictEqual(doubleCheckBlog.body.likes, likesBefore)
+    })
+
+    test('BlogsAPI - updating non-like fields with no user gives 401', async() => {
+      const blogs = await helper.blogsInDb()
+      const blogToUpdate = blogs[0]
+      const likesBefore = blogToUpdate.likes
+
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(blogToUpdate)
         .expect(401)
-      assert(updatedBlog.error.text.includes('blog listing can only be modified by it\'s creator'))
+      assert(updatedBlog.error.text.includes('you must be logged in to perform this operation'))
 
       const doubleCheckBlog = await api
         .get(`/api/blogs/${blogToUpdate.id}`)
@@ -143,10 +158,22 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       const response = await api
         .delete(`/api/blogs/${idToDel}`)
         .set('Authorization', `Bearer ${token}`)
-        .expect(401)
+        .expect(403)
       const blogsAfter = await helper.blogsInDb()
       assert.strictEqual(blogsAfter.length, blogsBefore.length)
       assert(response.error.text.includes('blog listing can only be deleted by creator'))
+    })
+
+    test('BlogsAPI - Deleting blog with no user', async() => {
+      const blogsBefore = await helper.blogsInDb()
+      const idToDel = blogsBefore[0].id
+
+      const response = await api
+        .delete(`/api/blogs/${idToDel}`)
+        .expect(401)
+      const blogsAfter = await helper.blogsInDb()
+      assert.strictEqual(blogsAfter.length, blogsBefore.length)
+      assert(response.error.text.includes('you must be logged in to perform this operation'))
     })
 
   })

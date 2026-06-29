@@ -41,20 +41,28 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.put('/:id', async (request, response) => {
   const { title, author, url, likes } = request.body
-  const blog = await Blog.findById(request.params.id)
 
+  const blog = await Blog.findById(request.params.id)
   if(!blog) {
     return response.status(404).end()
-  } else if (blog.user.toString() !== request.userId) {
-    return response.status(401).json({ error: 'blog listing can only be modified by it\'s creator' })
-  }else {
-    blog.title = title
-    blog.author = author
-    blog.url = url
-    blog.likes = likes
+  } else {
+    // Instructions don't specify if updates should be allowed by someone other than the original user.
+    // making the assumption that only likes can be updated without authentication.
+    if(blog.user.toString() !== request.userId && (title || author || url )) {
+      if(request.userId) {
+        return response.status(403).json({ error: 'blog title, author and url can only be modified by its creator' })
+      } else {
+        return response.status(401).json({ error: 'you must be logged in to perform this operation' })
+      }
+    } else {
+      blog.title = title ?? blog.title
+      blog.author = author ?? blog.author
+      blog.url = url ?? blog.url
+      blog.likes = likes ?? blog.likes
 
-    const updatedBlog = await blog.save()
-    response.status(200).json(updatedBlog)
+      const updatedBlog = await blog.save()
+      response.status(200).json(updatedBlog)
+    }
   }
 })
 
@@ -63,8 +71,12 @@ blogsRouter.delete('/:id', async (request, response) => {
   const blog = await Blog.findById(blogId)
   if(!blog) {
     response.status(404).end()
-  } else if (!(blog.user.toString() === request.userId)) {
-    response.status(401).json({ error: 'blog listing can only be deleted by creator.' })
+  } else if (blog.user.toString() !== request.userId) {
+    if(request.userId) {
+      return response.status(403).json({ error: 'blog listing can only be deleted by creator' })
+    } else {
+      return response.status(401).json({ error: 'you must be logged in to perform this operation' })
+    }
   } else {
     const deleteSuccesful = await Blog.findByIdAndDelete(blogId)
     if(deleteSuccesful) {
