@@ -6,13 +6,37 @@ const supertest = require('supertest')
 const listhelper = require('../utils/list_helper')
 const helper = require('./testHelper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 const api = supertest(app)
 
 describe('BlogsAPI Tests - Confirm that api works as expected', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
+    await User.deleteMany({})
+
+    const promises = helper.initialUsers.map(async (user) => {
+      const hash = await bcrypt.hash(user.password, 10)
+      return {
+        ...user,
+        passwordHash: hash
+      }
+    })
+    const users = await Promise.all(promises)
+    await User.insertMany(users)
+    const user = await User.findOne({ username: 'gds48' })
+    const blogs = helper.initialBlogs.map(blog => {
+      return {
+        ...blog,
+        user: user._id.toString()
+      }
+    })
+    await Blog.insertMany(blogs)
+    const blogsInDb = await Blog.find({})
+    const blogIds = blogsInDb.map(blog => blog.id)
+    user.blogs = blogIds
+    await user.save()
   })
 
   describe('BlogsAPI - Test get methods', () => {
@@ -48,11 +72,13 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       const blogs = await helper.blogsInDb()
       const blogToUpdate = blogs[0]
       assert(blogToUpdate.likes !== 17)
-      blogToUpdate.likes = 17
+      // eslint-disable-next-line no-unused-vars
+      const { title, author, url, ...newBlog } = blogToUpdate
+      newBlog.likes = 17
 
       const updatedBlog = await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .send(blogToUpdate)
+        .put(`/api/blogs/${newBlog.id}`)
+        .send(newBlog)
         .expect(200)
       assert.strictEqual(updatedBlog.body.likes, 17)
 
@@ -61,39 +87,111 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
         .expect(200)
       assert.strictEqual(doubleCheckBlog.body.likes, 17)
     })
+
+    test('BlogsAPI - updating with incorrect user gives 403', async() => {
+      const blogs = await helper.blogsInDb()
+      const blogToUpdate = blogs[0]
+      const likesBefore = blogToUpdate.likes
+
+      const token = await helper.getToken('bbb66')
+
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(blogToUpdate)
+        .expect(403)
+      assert(updatedBlog.error.text.includes('blog title, author and url can only be modified by its creator'))
+
+      const doubleCheckBlog = await api
+        .get(`/api/blogs/${blogToUpdate.id}`)
+        .expect(200)
+      assert.strictEqual(doubleCheckBlog.body.likes, likesBefore)
+    })
+
+    test('BlogsAPI - updating non-like fields with no user gives 401', async() => {
+      const blogs = await helper.blogsInDb()
+      const blogToUpdate = blogs[0]
+      const likesBefore = blogToUpdate.likes
+
+      const updatedBlog = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(blogToUpdate)
+        .expect(401)
+      assert(updatedBlog.error.text.includes('you must be logged in to perform this operation'))
+
+      const doubleCheckBlog = await api
+        .get(`/api/blogs/${blogToUpdate.id}`)
+        .expect(200)
+      assert.strictEqual(doubleCheckBlog.body.likes, likesBefore)
+    })
   })
 
-  describe('BlogsAPI - Test delete methods', async() => {
+  describe('BlogsAPI - Test delete methods', () => {
     test('BlogsAPI - Delete Missing Blog', async() => {
       const blogId = await helper.nonExistingId()
+
+      const token = await helper.getToken('gds48')
       await api
         .delete(`/api/blogs/${blogId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(404)
     })
 
     test('BlogsAPI - Deleting blog', async() => {
       const blogsBefore = await helper.blogsInDb()
       const idToDel = blogsBefore[0].id
+
+      const token = await helper.getToken('gds48')
       await api
         .delete(`/api/blogs/${idToDel}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(204)
       const blogsAfter = await helper.blogsInDb()
       assert.strictEqual(blogsAfter.length, blogsBefore.length - 1)
     })
 
+    test('BlogsAPI - Deleting blog with incorrect user', async() => {
+      const blogsBefore = await helper.blogsInDb()
+      const idToDel = blogsBefore[0].id
+
+      const token = await helper.getToken('bbb66')
+      const response = await api
+        .delete(`/api/blogs/${idToDel}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(403)
+      const blogsAfter = await helper.blogsInDb()
+      assert.strictEqual(blogsAfter.length, blogsBefore.length)
+      assert(response.error.text.includes('blog listing can only be deleted by creator'))
+    })
+
+    test('BlogsAPI - Deleting blog with no user', async() => {
+      const blogsBefore = await helper.blogsInDb()
+      const idToDel = blogsBefore[0].id
+
+      const response = await api
+        .delete(`/api/blogs/${idToDel}`)
+        .expect(401)
+      const blogsAfter = await helper.blogsInDb()
+      assert.strictEqual(blogsAfter.length, blogsBefore.length)
+      assert(response.error.text.includes('you must be logged in to perform this operation'))
+    })
+
   })
 
-  describe('Blogs API - Test create methods', async() => {
+  describe('Blogs API - Test post methods', () => {
     test('BlogsAPI - Missing title returns 400', async() => {
       const originalBlog = helper.initialBlogs[0]
       // disabling as we are purposefully extracting title to leave a blog with likes = undefined
+      // i.e. we want a valid title only.
       // eslint-disable-next-line no-unused-vars
       const { title, ...newBlog } =  originalBlog
 
       assert.strictEqual(newBlog.title, undefined)
 
+      const token = await helper.getToken('gds48')
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
     })
@@ -106,8 +204,11 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
 
       assert.strictEqual(newBlog.url, undefined)
 
+      const token = await helper.getToken('gds48')
+
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(400)
     })
@@ -119,8 +220,11 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       const { likes, ...newBlog } =  originalBlog
 
       assert.strictEqual(newBlog.likes, undefined)
+
+      const token = await helper.getToken('gds48')
       const returnedBlog = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
 
@@ -129,8 +233,10 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
     })
 
     test('BlogsAPI - New Blog is saved', async() => {
+      const token = await helper.getToken('gds48')
       const returnedBlog = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(helper.otherBlogs[0])
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -139,13 +245,14 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
       assert.strictEqual(returnedBlog.body.author, helper.otherBlogs[0].author)
       assert.strictEqual(returnedBlog.body.likes, helper.otherBlogs[0].likes)
       assert.strictEqual(returnedBlog.body.url, helper.otherBlogs[0].url)
-
     })
 
     test('BlogsAPI - Saving new Blog increases db by one', async() => {
       const lenBefore = (await api.get('/api/blogs')).body.length
+      const token = await helper.getToken('gds48')
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(helper.otherBlogs[0])
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -154,263 +261,274 @@ describe('BlogsAPI Tests - Confirm that api works as expected', () => {
 
       assert.strictEqual(lenAfter, lenBefore+1 )
     })
+
+    test('BlogsAPI - Saving new Blog fails with 401 if no user provided', async() => {
+      const response = await api
+        .post('/api/blogs')
+        .send(helper.otherBlogs[0])
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      assert(response.error.text.includes('invalid token'))
+    })
   })
 })
 
-describe('MostBlogs test group', { skip: true }, () => {
+describe('Other Tests', { skip: true }, () => {
+  describe('MostBlogs test group', () => {
 
-  test('MostBlogs of empty list is null', () => {
-    const result = listhelper.mostBlogs([])
-    assert.deepStrictEqual(result, null)
-  })
+    test('MostBlogs of empty list is null', () => {
+      const result = listhelper.mostBlogs([])
+      assert.deepStrictEqual(result, null)
+    })
 
-  test('MostBlogs author of single blog is Michael Chan', () => {
-    const result = listhelper.mostBlogs([helper.initialBlogs[0]])
-    assert.deepStrictEqual(result, { author: 'Michael Chan', blogs: 1 })
-  })
+    test('MostBlogs author of single blog is Michael Chan', () => {
+      const result = listhelper.mostBlogs([helper.initialBlogs[0]])
+      assert.deepStrictEqual(result, { author: 'Michael Chan', blogs: 1 })
+    })
 
-  test('MostBlogs from on author is Robert C. Martin', () => {
-    const result = listhelper.mostBlogs(helper.initialBlogs)
-    assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 })
-  })
-})
-
-
-describe('most liked author', { skip: true }, () => {
-
-  const singleBlog = [{
-    title: 'Zen Habits',
-    author: 'Leo Babauta',
-    url: 'https://zenhabits.net',
-    likes: 2,
-    id: '6a2a72f5f67bc01b6cf0205b'
-  }]
-
-  test('most liked author of no blog is null', () => {
-    const result = listhelper.mostLikes([])
-    assert.deepStrictEqual(result, null)
+    test('MostBlogs from on author is Robert C. Martin', () => {
+      const result = listhelper.mostBlogs(helper.initialBlogs)
+      assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 })
+    })
   })
 
 
-  test('most liked author of single blog is Leo Babauta', () => {
-    const result = listhelper.mostLikes(singleBlog)
-    assert.deepStrictEqual(result, { author: 'Leo Babauta', likes: 2 })
+  describe('most liked author', () => {
+
+    const singleBlog = [{
+      title: 'Zen Habits',
+      author: 'Leo Babauta',
+      url: 'https://zenhabits.net',
+      likes: 2,
+      id: '6a2a72f5f67bc01b6cf0205b'
+    }]
+
+    test('most liked author of no blog is null', () => {
+      const result = listhelper.mostLikes([])
+      assert.deepStrictEqual(result, null)
+    })
+
+
+    test('most liked author of single blog is Leo Babauta', () => {
+      const result = listhelper.mostLikes(singleBlog)
+      assert.deepStrictEqual(result, { author: 'Leo Babauta', likes: 2 })
+    })
+
+    test('most liked author of all blogs is Edsger W. Dijkstra', () => {
+      const result = listhelper.mostLikes(helper.initialBlogs)
+      assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', likes: 17 })
+    })
   })
 
-  test('most liked author of all blogs is Edsger W. Dijkstra', () => {
-    const result = listhelper.mostLikes(helper.initialBlogs)
-    assert.deepStrictEqual(result, { author: 'Edsger W. Dijkstra', likes: 17 })
-  })
-})
+  describe('favourite Blog', () => {
+    const multipleBlogs = [
+      {
+        title: 'Zen Habits',
+        author: 'Leo Babauta',
+        url: 'https://zenhabits.net',
+        likes: 2
+      },
+      {
+        title: 'Smitten Kitchen',
+        author: 'Deb Perelman',
+        url: 'https://smittenkitchen.com',
+        likes: 1
+      },
+      {
+        title: 'Mr. Money Mustache',
+        author: 'Mr. Money Mustache',
+        url: 'https://www.mrmoneymustache.com',
+        likes: 5
+      },
+      {
+        title: 'Seth\'s Blog',
+        author: 'Seth Godin',
+        url: 'https://seths.blog',
+        likes: 8
+      },
+      {
+        title: 'Designer Daddy',
+        author: 'Brent Almond',
+        url: 'https://designerdaddy.com',
+        likes: 6
+      },
+      {
+        title: 'React patterns',
+        author: 'Michael Chan',
+        url: 'https://reactpatterns.com/',
+        likes: 7
+      },
+      {
+        title: 'Go To Statement Considered Harmful',
+        author: 'Edsger W. Dijkstra',
+        url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+        likes: 5
+      },
+      {
+        title: 'Canonical string reduction',
+        author: 'Edsger W. Dijkstra',
+        url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
+        likes: 12
+      },
+      {
+        title: 'First class tests',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
+        likes: 10
+      },
+      {
+        title: 'TDD harms architecture',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
+        likes: 0
+      },
+      {
+        title: 'Type wars',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+        likes: 2
+      }
+    ]
 
-describe('favourite Blog', { skip: true }, () => {
-  const multipleBlogs = [
-    {
+    const singleBlog = [{
+      title: 'Zen Habits',
+      author: 'Leo Babauta',
+      url: 'https://zenhabits.net',
+      likes: 2,
+      id: '6a2a72f5f67bc01b6cf0205b'
+    }]
+
+    test('favourite of all blogs (with dup likes) is Canonical string reduction or TDD harms architecture', () => {
+
+      const twoTopLikesBlogs = structuredClone(multipleBlogs)
+      twoTopLikesBlogs[9].likes = 12
+
+      const result = listhelper.favouriteBlog(twoTopLikesBlogs).title
+      assert.ok(['TDD harms architecture', 'Canonical string reduction'].includes(result))
+    })
+
+    test('favourite of no blogs is null', () => {
+      const result = listhelper.favouriteBlog([])
+      assert.strictEqual(result, null)
+    })
+
+    test('favourite of single blog is Zen Habits', () => {
+
+      const result = listhelper.favouriteBlog(singleBlog)
+      assert.deepStrictEqual(result, singleBlog[0])
+    })
+
+    test('favourite of all blogs is Canonical string reduction', () => {
+      const result = listhelper.favouriteBlog(multipleBlogs)
+      assert.deepStrictEqual(result, multipleBlogs[7])
+    })
+  })
+
+  describe('total likes', () => {
+
+    const multipleBlogs = [
+      {
+        title: 'Zen Habits',
+        author: 'Leo Babauta',
+        url: 'https://zenhabits.net',
+        likes: 2
+      },
+      {
+        title: 'Smitten Kitchen',
+        author: 'Deb Perelman',
+        url: 'https://smittenkitchen.com',
+        likes: 1
+      },
+      {
+        title: 'Mr. Money Mustache',
+        author: 'Mr. Money Mustache',
+        url: 'https://www.mrmoneymustache.com',
+        likes: 5
+      },
+      {
+        title: 'Seth\'s Blog',
+        author: 'Seth Godin',
+        url: 'https://seths.blog',
+        likes: 8
+      },
+      {
+        title: 'Designer Daddy',
+        author: 'Brent Almond',
+        url: 'https://designerdaddy.com',
+        likes: 6
+      },
+      {
+        title: 'React patterns',
+        author: 'Michael Chan',
+        url: 'https://reactpatterns.com/',
+        likes: 3
+      },
+      {
+        title: 'Go To Statement Considered Harmful',
+        author: 'Edsger W. Dijkstra',
+        url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+        likes: 5
+      },
+      {
+        title: 'Canonical string reduction',
+        author: 'Edsger W. Dijkstra',
+        url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
+        likes: 12
+      },
+      {
+        title: 'First class tests',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
+        likes: 10
+      },
+      {
+        title: 'TDD harms architecture',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
+        likes: 0
+      },
+      {
+        title: 'Type wars',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
+        likes: 2
+      }
+    ]
+
+    const singleBlog = [{
       title: 'Zen Habits',
       author: 'Leo Babauta',
       url: 'https://zenhabits.net',
       likes: 2
-    },
-    {
-      title: 'Smitten Kitchen',
-      author: 'Deb Perelman',
-      url: 'https://smittenkitchen.com',
-      likes: 1
-    },
-    {
-      title: 'Mr. Money Mustache',
-      author: 'Mr. Money Mustache',
-      url: 'https://www.mrmoneymustache.com',
-      likes: 5
-    },
-    {
-      title: 'Seth\'s Blog',
-      author: 'Seth Godin',
-      url: 'https://seths.blog',
-      likes: 8
-    },
-    {
-      title: 'Designer Daddy',
-      author: 'Brent Almond',
-      url: 'https://designerdaddy.com',
-      likes: 6
-    },
-    {
-      title: 'React patterns',
-      author: 'Michael Chan',
-      url: 'https://reactpatterns.com/',
-      likes: 7
-    },
-    {
-      title: 'Go To Statement Considered Harmful',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5
-    },
-    {
-      title: 'Canonical string reduction',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-      likes: 12
-    },
-    {
-      title: 'First class tests',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-      likes: 10
-    },
-    {
-      title: 'TDD harms architecture',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-      likes: 0
-    },
-    {
-      title: 'Type wars',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-      likes: 2
-    }
-  ]
+    }]
 
-  const singleBlog = [{
-    title: 'Zen Habits',
-    author: 'Leo Babauta',
-    url: 'https://zenhabits.net',
-    likes: 2,
-    id: '6a2a72f5f67bc01b6cf0205b'
-  }]
+    test('sum likes all blogs returns 58', () => {
+      const result = listhelper.totalLikes(multipleBlogs)
+      assert.strictEqual(result, 54)
+    })
 
-  test('favourite of all blogs (with dup likes) is Canonical string reduction or TDD harms architecture', () => {
+    test('sum likes single blog returns 2', () => {
 
-    const twoTopLikesBlogs = structuredClone(multipleBlogs)
-    twoTopLikesBlogs[9].likes = 12
 
-    const result = listhelper.favouriteBlog(twoTopLikesBlogs).title
-    assert.ok(['TDD harms architecture', 'Canonical string reduction'].includes(result))
+      const result = listhelper.totalLikes(singleBlog)
+      assert.strictEqual(result, 2)
+    })
+
+    test('empty array returns 0', () => {
+      const result = listhelper.totalLikes([])
+      assert.strictEqual(result, 0)
+    })
+
   })
 
-  test('favourite of no blogs is null', () => {
-    const result = listhelper.favouriteBlog([])
-    assert.strictEqual(result, null)
-  })
+  test('dummy returns one', () => {
+    const blogs = []
 
-  test('favourite of single blog is Zen Habits', () => {
-
-    const result = listhelper.favouriteBlog(singleBlog)
-    assert.deepStrictEqual(result, singleBlog[0])
-  })
-
-  test('favourite of all blogs is Canonical string reduction', () => {
-    const result = listhelper.favouriteBlog(multipleBlogs)
-    assert.deepStrictEqual(result, multipleBlogs[7])
+    const result = listhelper.dummy(blogs)
+    assert.strictEqual(result, 1)
   })
 })
-
-describe('total likes', { skip: true }, () => {
-
-  const multipleBlogs = [
-    {
-      title: 'Zen Habits',
-      author: 'Leo Babauta',
-      url: 'https://zenhabits.net',
-      likes: 2
-    },
-    {
-      title: 'Smitten Kitchen',
-      author: 'Deb Perelman',
-      url: 'https://smittenkitchen.com',
-      likes: 1
-    },
-    {
-      title: 'Mr. Money Mustache',
-      author: 'Mr. Money Mustache',
-      url: 'https://www.mrmoneymustache.com',
-      likes: 5
-    },
-    {
-      title: 'Seth\'s Blog',
-      author: 'Seth Godin',
-      url: 'https://seths.blog',
-      likes: 8
-    },
-    {
-      title: 'Designer Daddy',
-      author: 'Brent Almond',
-      url: 'https://designerdaddy.com',
-      likes: 6
-    },
-    {
-      title: 'React patterns',
-      author: 'Michael Chan',
-      url: 'https://reactpatterns.com/',
-      likes: 3
-    },
-    {
-      title: 'Go To Statement Considered Harmful',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5
-    },
-    {
-      title: 'Canonical string reduction',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-      likes: 12
-    },
-    {
-      title: 'First class tests',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-      likes: 10
-    },
-    {
-      title: 'TDD harms architecture',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-      likes: 0
-    },
-    {
-      title: 'Type wars',
-      author: 'Robert C. Martin',
-      url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-      likes: 2
-    }
-  ]
-
-  const singleBlog = [{
-    title: 'Zen Habits',
-    author: 'Leo Babauta',
-    url: 'https://zenhabits.net',
-    likes: 2
-  }]
-
-  test('sum likes all blogs returns 58', () => {
-    const result = listhelper.totalLikes(multipleBlogs)
-    assert.strictEqual(result, 58)
-  })
-
-  test('sum likes single blog returns 2', () => {
-
-
-    const result = listhelper.totalLikes(singleBlog)
-    assert.strictEqual(result, 2)
-  })
-
-  test('empty array returns 0', () => {
-    const result = listhelper.totalLikes([])
-    assert.strictEqual(result, 0)
-  })
-
-})
-
-test('dummy returns one', { skip: true }, () => {
-  const blogs = []
-
-  const result = listhelper.dummy(blogs)
-  assert.strictEqual(result, 1)
-})
-
 after(async () => {
   await mongoose.connection.close()
 })
