@@ -33,7 +33,6 @@ const App = () => {
       .create(noteObject)
       .then(returnedNote => {
         setNotes(notes.concat(returnedNote))
-        setNewNote(notes.concat(returnedNote))
       })
   }
   const deleteNote = (id) => {

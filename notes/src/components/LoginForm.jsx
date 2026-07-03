@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import loginService from '../services/login'
 import Notification from './Notification'
+import noteService from '../services/notes'
 
 /* eslint-disable react/prop-types */
 const LoginForm = ({ onLoginSuccess }) => {
@@ -14,6 +15,8 @@ const LoginForm = ({ onLoginSuccess }) => {
     try {
       const user = await loginService.login({ username, password })
       onLoginSuccess(user)
+      noteService.setToken(user.token)
+
       setUsername('')
       setPassword('')
     } catch {
