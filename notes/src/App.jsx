@@ -23,6 +23,14 @@ const App = () => {
     
   }, [])
   
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedNoteAppUser')
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      noteService.setToken(user.token)
+    }
+  }, [])
   const handleAddNote = (content) => {
     const noteObject = {
       content: content, 
@@ -66,6 +74,12 @@ const App = () => {
     })
   }
 
+  const handleLogout = () => {
+    event.preventDefault()
+    window.localStorage.removeItem('loggedNoteAppUser')
+    setUser(null)
+  }
+
   const notesToShow = showAll ? notes : notes.filter(note => note.important)
 
   return (
@@ -82,6 +96,9 @@ const App = () => {
       {user && (
         <div>
           <p>{user.name} logged in</p>
+          <form onSubmit={handleLogout}>
+            <button type="submit">logout</button>
+          </form>
           <NoteForm onNoteAdded={handleAddNote} />
         </div>
       )}

@@ -14,9 +14,11 @@ const LoginForm = ({ onLoginSuccess }) => {
     
     try {
       const user = await loginService.login({ username, password })
-      onLoginSuccess(user)
+      window.localStorage.setItem(
+        'loggedNoteAppUser', JSON.stringify(user)
+      )
       noteService.setToken(user.token)
-
+      onLoginSuccess(user)
       setUsername('')
       setPassword('')
     } catch {
