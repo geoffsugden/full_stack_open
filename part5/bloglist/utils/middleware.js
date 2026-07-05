@@ -32,22 +32,20 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
-  } else if (error.name === 'MongoServerError'
-      && error.message.includes('E11000 duplicate key error')
-      && error.message.includes('url')) {
-    return response.status(409).json({ error: 'expected `url` to be unique' })
-  } else if (error.name === 'MongoServerError'
-      && error.message.includes('E11000 duplicate key error')
-      && error.message.includes('username')) {
-    return response.status(409).json({ error: 'expected `username` to be unique' })
   } else if (error.name === 'MongoServerError' && error.message.includes('E11000 duplicate key error')) {
-    return response.status(409).json({ error: 'duplicate key error' })
+    let msg
+    if(error.message.includes('url')) {
+      msg = 'expected `url` to be unique'
+    } else if (error.message.includes('username')) {
+      msg = 'expected `username` to be unique'
+    } else {
+      msg = 'duplicate key error'
+    }
+    return response.status(409).json({ error: msg })
   } else if (error.name === 'JsonWebTokenError') {
     return response.status(401).json({ error: 'token invalid' })
   } else if (error.name === 'TokenExpiredError') {
-    return response.status(401).json({
-      error: 'token expired'
-    })
+    return response.status(401).json({ error: 'token expired' })
   }
   next(error)
 }
