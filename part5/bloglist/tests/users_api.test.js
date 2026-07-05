@@ -179,7 +179,7 @@ describe('BlogsAPI User / Login tests', () => {
       const result = await api
         .post('/api/users')
         .send(newUser)
-        .expect(400)
+        .expect(409)
         .expect('Content-Type', /application\/json/)
 
       const usersAtEnd = await helper.usersInDb()
