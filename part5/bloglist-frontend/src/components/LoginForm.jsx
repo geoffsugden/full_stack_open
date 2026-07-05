@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import login from '../services/login'
+import blogService from '../services/blogs'
 
 const LoginForm = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('')
@@ -10,7 +11,10 @@ const LoginForm = ({ onLoginSuccess }) => {
 
     try {
       const user = await login({ username, password })
-
+      window.localStorage.setItem(
+        'loggedBlogListUser', JSON.stringify(user)
+      )
+      blogService.setToken(user.token)
       onLoginSuccess(user)
       setUsername('')
       setPassword('')
@@ -20,15 +24,12 @@ const LoginForm = ({ onLoginSuccess }) => {
   }
 
   return (
-    <form onSubmit={handlelogin}>
-      <label>
-        username
-        <input type='text' value={username} onChange={(e) => setUsername(e.target.value)} />
-      </label>
-      <label>
-        password
-        <input type='text' value={password} onChange={(e) => setPassword(e.target.value)} />
-      </label>
+    <form onSubmit={handlelogin} className='form-container'>
+
+        <label htmlFor='username'>username:</label>
+        <input id='username' type='text' value={username} onChange={(e) => setUsername(e.target.value)} />
+        <label htmlFor='password'>password:</label>
+        <input id='password' type='text' value={password} onChange={(e) => setPassword(e.target.value)} />
       <button type='submit'>login</button>
     </form>
   )
