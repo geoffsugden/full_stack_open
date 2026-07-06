@@ -20,3 +20,26 @@ button {
 .blog-title {
   font-weight: bold;
 }
+
+.message, .error {
+  border-style: solid;
+  border-width: 4px;
+  font-size: larger;
+  font-weight: bolder;
+  padding: 0px 10px 0px 10px;
+  width: fit-content;
+  margin: 10px 0px 20px 5px;
+}
+
+.message {
+  border-color: green;
+  background-color: blanchedalmond;
+  color: darkgreen; 
+}
+
+.error {
+  border-color: red;
+  background-color: darkred;
+  color: beige;
+  width: fit-content;
+}

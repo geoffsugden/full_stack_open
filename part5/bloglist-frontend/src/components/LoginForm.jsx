@@ -2,11 +2,11 @@ import { useState } from 'react'
 import login from '../services/login'
 import blogService from '../services/blogs'
 
-const LoginForm = ({ onLoginSuccess }) => {
+const LoginForm = ({ onLoginSuccess, showMsg }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   
-  const handlelogin = async event => {
+  const handlelogin = async (event) => {
     event.preventDefault()
 
     try {
@@ -18,8 +18,10 @@ const LoginForm = ({ onLoginSuccess }) => {
       onLoginSuccess(user)
       setUsername('')
       setPassword('')
-    } catch (error) {
-      console.log('Incorrect Credentials', error)
+      showMsg({ msg: `Hello ${user.name} thankyou for using our huumble application!`, msgType: 'message'})
+    } catch (e) {
+      showMsg({ msg: `Login failed due to ${e.response.data.error}`, msgType: 'error'})
+      console.log('Incorrect Credentials', e)
     }
   }
 

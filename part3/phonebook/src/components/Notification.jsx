@@ -1,4 +1,4 @@
-const Notification = ({message}) => {
+const Notification = ({ message }) => {
     
     const messageValue = message.messageValue
     const messageType = message.messageType
