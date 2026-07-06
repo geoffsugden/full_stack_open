@@ -7,20 +7,36 @@
 
 button {
   margin-top: 10px;
-  max-width: 73px;
+  width: fit-content;
 }
 
 .blog {
-  max-width: 400px;
+  max-width: 500px;
   border-style: double; 
   margin: 5px;
   padding-left: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
 }
 
 .blog-title {
   font-weight: bold;
 }
 
+.blog-details-display { 
+  display: flex;
+  margin-bottom: 7px;
+}
+
+.like-button { 
+  margin-left: 5px;
+}
+
+.remove-blog-button {
+  margin: 3px 10px 3px 3px;
+}
 .message, .error {
   border-style: solid;
   border-width: 4px;
@@ -43,3 +59,5 @@ button {
   color: beige;
   width: fit-content;
 }
+
+
