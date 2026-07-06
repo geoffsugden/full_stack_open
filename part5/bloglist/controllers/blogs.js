@@ -70,20 +70,26 @@ blogsRouter.delete('/:id', async (request, response) => {
   const blogId = request.params.id
   const blog = await Blog.findById(blogId)
   if(!blog) {
-    response.status(404).end()
-  } else if (blog.user.toString() !== request.userId) {
+    return response.status(404).end()
+  }
+
+  if (blog.user.toString() !== request.userId) {
     if(request.userId) {
       return response.status(403).json({ error: 'blog listing can only be deleted by creator' })
     } else {
       return response.status(401).json({ error: 'you must be logged in to perform this operation' })
     }
+  }
+
+  await User.findByIdAndUpdate(
+    request.userId,
+    { $pull: { blogs: blogId  } }
+  )
+  const deleteSuccesful = await Blog.findByIdAndDelete(blogId)
+  if(deleteSuccesful) {
+    response.status(204).end()
   } else {
-    const deleteSuccesful = await Blog.findByIdAndDelete(blogId)
-    if(deleteSuccesful) {
-      response.status(204).end()
-    } else {
-      response.status(404).end()
-    }
+    response.status(404).end()
   }
 })
 
