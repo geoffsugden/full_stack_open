@@ -8,19 +8,18 @@ const NoteForm = ({ onNoteAdded }) => {
 
   const addNote = (event) => {
     event.preventDefault()
-    
-    onNoteAdded(newNote)
+
+    onNoteAdded({
+      content: newNote, 
+      important: true
+    })
 
     setNewNote('')
   }
 
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
-  }
-
   return (
     <form onSubmit={addNote}>
-      <input value={newNote} onChange={handleNoteChange}/>
+      <input value={newNote} onChange={e => setNewNote(e.target.value)}/>
       <button type='submit'>save</button>
     </form>
   )

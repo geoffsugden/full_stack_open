@@ -4,11 +4,10 @@ import Notification from './Notification'
 import noteService from '../services/notes'
 
 /* eslint-disable react/prop-types */
-const LoginForm = ({ onLoginSuccess }) => {
+const LoginForm = ({ onLoginSuccess, setErrorMessage }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState('')
-
+ 
   const handleLogin = async event => {
     event.preventDefault()
     
@@ -22,28 +21,30 @@ const LoginForm = ({ onLoginSuccess }) => {
       setUsername('')
       setPassword('')
     } catch {
-      setLoginError('wrong credentials')
-      setTimeout(() => {setLoginError(null)}, 5000)
+      setErrorMessage('wrong credentials')
     }
-    
   }
+
   return (
-    <form onSubmit={handleLogin}> 
-        <div>
-          <Notification message={loginError} />
-          <label>
-            username
-            <input type="text" value={username} onChange={({ target }) => setUsername(target.value)} />
-          </label>
-        </div>
-        <div>
-          <label>
-            password
-            <input type="text" value={password} onChange={({ target }) => setPassword(target.value)} />
-          </label>
-        </div>
-        <button type="submit">login</button>
-      </form>     
+    <div>
+      <div>
+        <form onSubmit={handleLogin}> 
+          <div >
+            <label>
+              username
+              <input type="text" value={username} onChange={({ target }) => setUsername(target.value)} />
+            </label>
+          </div>
+          <div>
+            <label>
+              password
+              <input type="text" value={password} onChange={({ target }) => setPassword(target.value)} />
+            </label>
+          </div>
+          <button type="submit">login</button>
+        </form>     
+      </div>
+    </div>
   )
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import noteService from './services/notes'
 import loginService from './services/login'
 import DisplayNote from './components/DisplayNote'
@@ -6,6 +6,7 @@ import Notification from './components/Notification'
 import NoteForm from './components/NoteForm'
 import LoginForm from './components/LoginForm'
 import Footer from './components/Footer'
+import Togglable from './components/Togglable'
 
 const App = () => {
   const [notes, setNotes] = useState([])
@@ -31,14 +32,13 @@ const App = () => {
       noteService.setToken(user.token)
     }
   }, [])
-  const handleAddNote = (content) => {
-    const noteObject = {
-      content: content, 
-      important: Math.random() < 0.5,
-    }
 
+  const noteFormRef = useRef()
+
+  const handleAddNote = (content) => {
+    noteFormRef.current.toggleVisibilty()
     noteService
-      .create(noteObject)
+      .create(content)
       .then(returnedNote => {
         setNotes(notes.concat(returnedNote))
       })
@@ -88,10 +88,12 @@ const App = () => {
       <Notification message={errorMessage} />
 
       {!user && (
-        <LoginForm
-          onLoginSuccess={setUser}
-          setErrorMessage={setErrorMessage}
-        />
+        <Togglable buttonLabel='Log in'>
+          <LoginForm
+            onLoginSuccess={setUser}
+            setErrorMessage={setErrorMessage}
+          />
+        </Togglable>
       )}
       {user && (
         <div>
@@ -99,7 +101,9 @@ const App = () => {
           <form onSubmit={handleLogout}>
             <button type="submit">logout</button>
           </form>
-          <NoteForm onNoteAdded={handleAddNote} />
+          <Togglable buttonLabel='New Note' ref={noteFormRef}>
+            <NoteForm onNoteAdded={handleAddNote} />
+          </Togglable>
         </div>
       )}
 
