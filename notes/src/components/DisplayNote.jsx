@@ -1,4 +1,4 @@
-const DisplayNote = ({ note, toggleImportance, deleteNote}) => {
+const DisplayNote = ({ note, toggleImportance, deleteNote }) => {
   const label = note.important ? 'make not important' : 'make important'
 
   return (

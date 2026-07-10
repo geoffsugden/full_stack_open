@@ -15,15 +15,15 @@ const App = () => {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    
+
     noteService
       .getAll()
       .then(initialNotes => {
         setNotes(initialNotes)
       })
-    
+
   }, [])
-  
+
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedNoteAppUser')
     if (loggedUserJSON) {
@@ -49,7 +49,7 @@ const App = () => {
     noteService
       .delNote(id)
       .then(response => {
-        setNotes(notes.filter(n => n.id != id))
+        setNotes(notes.filter(n => n.id !== id))
       })
   }
 
@@ -57,21 +57,21 @@ const App = () => {
   const toggleImportonceOf = (id) => {
     const note = notes.find(n => n.id === id)
     const changedNote = { ...note, important: !note.important }
-  
+
     noteService
       .update(id, changedNote)
       .then(returnedNote => {
         setNotes(notes.map(note => note.id === id ? changedNote : note))
-    })
-    .catch(error => {
-      setErrorMessage( 
-        `The note '${note.content}' was already deleted from the server`,
-        console.error('Error is', error)
-        
-      )
-      setTimeout(() => {setErrorMessage(null)},5000)
-      setNotes(notes.filter(n => n.id !== id))
-    })
+      })
+      .catch(error => {
+        setErrorMessage(
+          `The note '${note.content}' was already deleted from the server`,
+          console.error('Error is', error)
+
+        )
+        setTimeout(() => {setErrorMessage(null)},5000)
+        setNotes(notes.filter(n => n.id !== id))
+      })
   }
 
   const handleLogout = () => {
@@ -110,12 +110,12 @@ const App = () => {
       <br />
       <div><button onClick={() => setShowAll(!showAll)}>show {showAll ? 'important' : 'all'} </button></div>
       <ul>
-        {notesToShow.map(note => 
-          <DisplayNote 
-            key={note.id} 
-            note={note} 
+        {notesToShow.map(note =>
+          <DisplayNote
+            key={note.id}
+            note={note}
             toggleImportance={() => toggleImportonceOf(note.id)}
-            deleteNote={() => deleteNote(note.id)} 
+            deleteNote={() => deleteNote(note.id)}
           />
         )}
       </ul>

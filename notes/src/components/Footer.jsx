@@ -1,16 +1,16 @@
 const Footer = () => {
-    const footerStyle = {
-        color: 'green',
-        fontStyle: 'italic'
-    }
+  const footerStyle = {
+    color: 'green',
+    fontStyle: 'italic'
+  }
 
-    return (
-        <div style={footerStyle}>
-            <br />
-            <p>
+  return (
+    <div style={footerStyle}>
+      <br />
+      <p>
                 Note app, GDS48
-            </p>
-        </div>
-    )
+      </p>
+    </div>
+  )
 }
- export default Footer
+export default Footer
