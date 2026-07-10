@@ -33,7 +33,7 @@ const App = () => {
   const blogFormRef = useRef()
 
   const handleLogout = (event) => {
-    event.preventDefault()
+    if(event) { event.preventDefault() }
     setUser(null)
     localStorage.removeItem('loggedBlogListUser')
     setMessage({ msg:'You have been logged out', msgType:'message' })
@@ -42,7 +42,9 @@ const App = () => {
 
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility()
-    setBlogs(blogs.concat(blogObject).sort((a,b) => b.likes - a.likes))
+    if(blogObject) {
+      setBlogs(blogs.concat(blogObject).sort((a,b) => b.likes - a.likes))
+    }
   }
 
   const displayMessage = (message) => {
@@ -81,7 +83,7 @@ const App = () => {
             <p>{user.name} logged in <button type='submit'>Logout</button></p>
           </form>
           <Togglable buttonShowLabel='Create New Blog' ref={blogFormRef}>
-            <NewBlogForm addNewBlog={addBlog} showMsg={displayMessage} />
+            <NewBlogForm addNewBlog={addBlog} showMsg={displayMessage} logout={handleLogout}/>
           </Togglable>
         </div>
       )}
