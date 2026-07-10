@@ -27,8 +27,8 @@ const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing, shwMsg }) =>
   return (
     <div className='blog'>
       <div className='blog-title' >Title: {blog.title}</div>
+      <div className='blog-author'>Author: {blog.author}</div>
       <Togglable buttonShowLabel='View' buttonHideLabel='Hide' cName='blog-details-display'>
-        <div className='blog-author'>Author: {blog.author}</div>
         <div className='blog-likes'>Likes: {blog.likes}<button className='like-button' onClick={addLike}>Like</button></div>
         <div className='blog-url'>url: <a href={blog.url}>{blog.url}</a></div>
         <div className='blog-user'>Added By: {blog.user.name}</div>
