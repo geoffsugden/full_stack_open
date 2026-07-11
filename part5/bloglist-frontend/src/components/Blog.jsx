@@ -1,24 +1,16 @@
 import Togglable from './Togglable'
-import blogService from '../services/blogs'
 
-const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing, shwMsg }) => {
+const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing, }) => {
 
   const addLike = async (event) => {
     event.preventDefault()
-    const apiResponse = await blogService.updateBlogListing({
-      id: blog.id,
-      likes: blog.likes + 1
-    })
-
-    updateLikes(apiResponse)
+    updateLikes(blog)
   }
 
   const handleDeleteBlog = async (event) => {
     event.preventDefault()
     if(window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      await blogService.removeBlog(blog.id)
-      removeBlogListing(blog.id)
-      shwMsg({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'message' })
+      removeBlogListing(blog)
     }
   }
 

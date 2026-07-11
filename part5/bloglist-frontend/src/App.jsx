@@ -32,6 +32,62 @@ const App = () => {
 
   const blogFormRef = useRef()
 
+  const addBlog = async(blogObject) => {
+    try {
+      const newBlog = await blogService.createBlogListing({ ...blogObject })
+      blogFormRef.current.toggleVisibility()
+      if(newBlog) {
+        setBlogs(blogs.concat(newBlog).sort((a,b) => b.likes - a.likes))
+      }
+      displayMessage({ msg: `Blog ${newBlog.title} added succesfully.`, msgType: 'message' } )
+    } catch (e) {
+      if (e.response.data.error) {
+        if(e.response.data.error === 'token expired') {
+          setUser(null)
+          window.localStorage.removeItem('loggedBlogListUser')
+          displayMessage({ msg:'Your session expired and you have been logged out. Please login in again to continue.', msgType: 'error' })
+        } else {
+          displayMessage({ msg:e.response.data.error, msgType: 'error' })
+        }
+      } else {
+        displayMessage({ msg:'An unknown error occurred, please check your entry and try again.' })
+      }
+    }
+  }
+
+  const updateBlogLikes = async (blog) => {
+    const updatedBlog = await blogService.updateBlogListing({
+      id: blog.id,
+      likes: blog.likes + 1
+    })
+    setBlogs(prevBlogs =>
+      prevBlogs.map(b =>
+        b.id === updatedBlog.id ? { ...b, likes: updatedBlog.likes } : b
+      ).sort((a,b) => b.likes - a.likes)
+    )
+  }
+
+  const removeBlog = async (blog) => {
+    try {
+      await blogService.removeBlog(blog.id)
+      setBlogs(prevBlogs =>
+        prevBlogs.filter(b => b.id !== blog.id)
+      )
+      displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'message' })
+    } catch (e) {
+      if (e.response.data.error) {
+        if(e.response.data.error === 'token expired') {
+          window.localStorage.removeItem('loggedBlogListUser')
+          displayMessage({ msg:'Your session expired and you have been logged out. Please login in again to continue.', msgType: 'error' })
+        } else {
+          displayMessage({ msg:e.response.data.error, msgType: 'error' })
+        }
+      } else {
+        displayMessage({ msg:'An unknown error occurred, please check your entry and try again.' })
+      }
+    }
+  }
+
   const handleLogout = (event) => {
     if(event) { event.preventDefault() }
     setUser(null)
@@ -39,31 +95,9 @@ const App = () => {
     setMessage({ msg:'You have been logged out', msgType:'message' })
     setTimeout(() => setMessage({ msg:null, msgType:null }), 5000)
   }
-
-  const addBlog = (blogObject) => {
-    blogFormRef.current.toggleVisibility()
-    if(blogObject) {
-      setBlogs(blogs.concat(blogObject).sort((a,b) => b.likes - a.likes))
-    }
-  }
-
   const displayMessage = (message) => {
     setMessage(message)
     setTimeout(() => setMessage({ msg:null, msgType:null }), 7000)
-  }
-
-  const updateBlogLikes = (newObject) => {
-    setBlogs(prevBlogs =>
-      prevBlogs.map(b =>
-        b.id === newObject.id ? { ...b, likes: b.likes + 1 } : b
-      ).sort((a,b) => b.likes - a.likes)
-    )
-  }
-
-  const removeBlog = (blogId) => {
-    setBlogs(prevBlogs =>
-      prevBlogs.filter(b => b.id !== blogId)
-    )
   }
 
   return (
@@ -83,7 +117,7 @@ const App = () => {
             <p>{user.name} logged in <button type='submit'>Logout</button></p>
           </form>
           <Togglable buttonShowLabel='Create New Blog' ref={blogFormRef}>
-            <NewBlogForm addNewBlog={addBlog} showMsg={displayMessage} logout={handleLogout}/>
+            <NewBlogForm addNewBlog={addBlog} />
           </Togglable>
         </div>
       )}
@@ -96,7 +130,6 @@ const App = () => {
           updateLikes={updateBlogLikes}
           loggedInUser={user}
           removeBlogListing={removeBlog}
-          shwMsg={displayMessage}
         />)}
     </div>
   )
