@@ -15,14 +15,14 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node index.js",
-    "dev": "cross-env NODE_ENV=development node --watch index.js",
-    "test": "cross-env NODE_ENV=test node --test",
-    "lint": "eslint ."
+    "test": "playwright test",
+    "test:report": "playwright show-report"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^26.1.1",
     "eslint": "^10.4.1",
     "globals": "^17.6.0"
   },
