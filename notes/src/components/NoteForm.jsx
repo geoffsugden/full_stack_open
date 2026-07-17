@@ -1,14 +1,11 @@
 import { useState } from 'react'
-import loginService from '../services/login'
-import Notification from './Notification'
 
-const NoteForm = ({ onNoteAdded }) => {
+const NoteForm = ({ createNote }) => {
   const [newNote, setNewNote] = useState('')
 
-  const addNote = (event) => {
+  const addNote = event => {
     event.preventDefault()
-
-    onNoteAdded({
+    createNote({
       content: newNote,
       important: true
     })
@@ -17,10 +14,18 @@ const NoteForm = ({ onNoteAdded }) => {
   }
 
   return (
-    <form onSubmit={addNote}>
-      <input value={newNote} onChange={e => setNewNote(e.target.value)} placeholder='This is where the note goes'/>
-      <button type='submit'>save</button>
-    </form>
+    <div>
+      <h2>Create a new note</h2>
+
+      <form onSubmit={addNote}>
+        <input
+          value={newNote}
+          onChange={event => setNewNote(event.target.value)}
+          placeholder="write note content here"
+        />
+        <button type="submit">save</button>
+      </form>
+    </div>
   )
 }
 

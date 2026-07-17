@@ -8,9 +8,10 @@ const Footer = () => {
     <div style={footerStyle}>
       <br />
       <p>
-                Note app, GDS48
+        Note app, Department of Computer Science, University of Helsinki 2026
       </p>
     </div>
   )
 }
+
 export default Footer
