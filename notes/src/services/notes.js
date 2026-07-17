@@ -26,9 +26,9 @@ const update = async (id, newObject) => {
   return response.data
 }
 
-const delNote = async id => {
+const remove = async id => {
   const response = await axios.delete(`${baseUrl}/${id}`)
   return response.data
 }
 
-export default { getAll, create, update, delNote, setToken }
+export default { getAll, create, update, remove, setToken }
