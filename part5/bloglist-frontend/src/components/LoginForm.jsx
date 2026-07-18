@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import login from '../services/login'
 import blogService from '../services/blogs'
 
@@ -6,6 +7,7 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const navigate = useNavigate()
   const handlelogin = async (event) => {
     event.preventDefault()
 
@@ -16,6 +18,7 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
       )
       blogService.setToken(user.token)
       onLoginSuccess(user)
+      navigate('/')
       setUsername('')
       setPassword('')
       showMsg({ msg: `Hello ${user.name} thankyou for using our huumble application!`, msgType: 'message' })

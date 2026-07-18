@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
 import Blog from './components/Blog'
+import BlogList from './components/BlogList'
 import NewBlogForm from './components/CreateBlog'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notifications'
@@ -30,12 +32,13 @@ const App = () => {
     }
   }, [])
 
-  const blogFormRef = useRef()
+  const navigate = useNavigate()
 
+  const match = useMatch('/blogs/:id')
+  const blog = match ? blogs.find(b => b.id === match.params.id) : null
   const addBlog = async(blogObject) => {
     try {
       const newBlog = await blogService.createBlogListing({ ...blogObject })
-      blogFormRef.current.toggleVisibility()
       if(newBlog) {
         setBlogs(blogs.concat(newBlog).sort((a,b) => b.likes - a.likes))
       }
@@ -73,6 +76,7 @@ const App = () => {
       setBlogs(prevBlogs =>
         prevBlogs.filter(b => b.id !== blog.id)
       )
+      navigate('/')
       displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'message' })
     } catch (e) {
       if (e.response.data.error) {
@@ -92,45 +96,36 @@ const App = () => {
     if(event) { event.preventDefault() }
     setUser(null)
     localStorage.removeItem('loggedBlogListUser')
+    navigate('/')
     setMessage({ msg:'You have been logged out', msgType:'message' })
     setTimeout(() => setMessage({ msg:null, msgType:null }), 5000)
+
   }
+
   const displayMessage = (message) => {
     setMessage(message)
     setTimeout(() => setMessage({ msg:null, msgType:null }), 7000)
   }
 
+  const padding = {
+    padding: 5
+  }
   return (
     <div>
-      <h1>Bloglist Application</h1>
       <Notification message={ message } />
-      {!user && (
-        <Togglable buttonShowLabel='Login'>
-          <div>
-            <LoginForm onLoginSuccess={setUser} showMsg={displayMessage} />
-          </div>
-        </Togglable>
-      )}
-      {user && (
-        <div>
-          <form onSubmit={handleLogout}>
-            <p>{user.name} logged in <button type='submit'>Logout</button></p>
-          </form>
-          <Togglable buttonShowLabel='Create New Blog' ref={blogFormRef}>
-            <NewBlogForm addNewBlog={addBlog} />
-          </Togglable>
-        </div>
-      )}
-      <br />
-      <h2>Behold the favourite Blogs</h2>
-      {blogs.map(blog =>
-        <Blog
-          key={blog.id}
-          blog={blog}
-          updateLikes={updateBlogLikes}
-          loggedInUser={user}
-          removeBlogListing={removeBlog}
-        />)}
+      <div>
+        <Link style={padding} to="/">Blogs</Link>
+        {user && (<Link style={padding} to="/newblog">New Blog</Link>)}
+        {!user && (<Link style={padding} to="/login">Login</Link>)}
+        {user && (<button onClick={handleLogout}>Logout</button>)}
+      </div>
+
+      <Routes>
+        <Route path="/" element={<BlogList blogs={blogs} user={user} updateBlogLikes={updateBlogLikes} removeBlog={removeBlog} />}></Route>
+        <Route path="/blogs/:id" element={<Blog blog={blog} updateLikes={updateBlogLikes} loggedInUser={user} removeBlogListing={removeBlog} />}/>
+        <Route path="/newblog" element={(user && <NewBlogForm addNewBlog={addBlog} />)} />
+        <Route path="/login" element={<LoginForm onLoginSuccess={setUser} showMsg={displayMessage} />} />
+      </Routes>
     </div>
   )
 }
