@@ -22,10 +22,9 @@ const NoteForm = ({ createNote }) => {
 
       <form onSubmit={addNote}>
         <TextField
-          lable="note content"
+          label="note content"
           value={newNote}
           onChange={event => setNewNote(event.target.value)}
-          placeholder="write note content here"
         />
         <Button type="submit" variant='contained' style={{ marginTop: 10 }}>save</Button>
       </form>

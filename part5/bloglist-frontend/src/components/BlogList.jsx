@@ -1,10 +1,12 @@
+
 import { Link } from 'react-router-dom'
+import { Typography } from '@mui/material'
 import Blog from './Blog'
 
 const BlogList = ({ blogs }) => {
   return (
     <div>
-      <h2>Behold the favourite Blogs</h2>
+      <Typography variant='h5' sx={{ pt: 2 }}>Behold the favourite Blogs</Typography>
       <ul>
         {blogs.map(blog =>
           <li key={blog.id}>

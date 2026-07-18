@@ -1,7 +1,8 @@
 .form-container {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-columns: 73px 1fr;
-  gap: 1px;
+  gap: 10px;
   max-width: 400px;
 }
 
@@ -11,53 +12,10 @@ button {
 }
 
 .blog {
-  max-width: 500px;
-  border-style: double; 
-  margin: 5px;
-  padding-left: 5px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 5px;
-}
-
-.blog-title {
-  font-weight: bold;
-}
-
-.blog-details-display { 
-  display: flex;
-  margin-bottom: 7px;
-}
-
-.like-button { 
-  margin-left: 5px;
-}
-
-.remove-blog-button {
-  margin: 3px 10px 3px 3px;
-}
-.message, .error {
-  border-style: solid;
-  border-width: 4px;
-  font-size: larger;
-  font-weight: bolder;
-  padding: 0px 10px 0px 10px;
-  width: fit-content;
-  margin: 10px 0px 20px 5px;
-}
-
-.message {
-  border-color: green;
-  background-color: blanchedalmond;
-  color: darkgreen; 
-}
-
-.error {
-  border-color: red;
-  background-color: darkred;
-  color: beige;
-  width: fit-content;
 }
 
 

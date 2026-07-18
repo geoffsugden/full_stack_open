@@ -1,13 +1,9 @@
-import Togglable from './Togglable'
+import { Button, Typography, Paper, Link, Box } from '@mui/material'
 
 const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing, }) => {
 
   if(!blog) {
     return null
-  }
-
-  if(loggedInUser) {
-    console.log('User', loggedInUser)
   }
 
   const addLike = async (event) => {
@@ -26,18 +22,21 @@ const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing, }) => {
   const canLike = loggedInUser
 
   return (
-    <div className='blog'>
-      <div className='blog-title' >Title: {blog.title}</div>
-      <div className='blog-author'>Author: {blog.author}</div>
-      <div className='blog-likes'>Likes: {blog.likes}
-        {canLike && <button className='like-button' onClick={addLike}>Like</button>}
-      </div>
-      <div className='blog-url'>url: <a href={blog.url}>{blog.url}</a></div>
-      <div className='blog-user'>Added By: {blog.user.name}</div>
-      {canDelete &&
-        <button className='remove-blog-button' onClick={handleDeleteBlog}>Delete</button>
-      }
-    </div>
+    <Paper className='blog' sx={{ mt: 1, p: 2 }}>
+      <Typography className='blog-title' variant='h5' sx={{ fontWeight: 'heavy' }}>{blog.title}</Typography>
+      <Typography className='blog-author' variant='subtitle1'>by {blog.author}</Typography>
+
+      <Link href={blog.url} className='blog-url'>{blog.url}</Link>
+      <Typography className='blog-user' variant='body2'>Added by {blog.user.name}</Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+        <Typography className='blog-likes' variant='body1'>{blog.likes} likes
+          {canLike && <Button variant='outlined' className='like-button' onClick={addLike} sx={{ ml: 1 }}>Like</Button>}
+        </Typography>
+        {canDelete &&
+          <Button variant='outlined' color='error' className='remove-blog-button' onClick={handleDeleteBlog} sx={{ mb: 1 }}>Delete</Button>
+        }
+      </Box>
+    </Paper>
   )
 }
 

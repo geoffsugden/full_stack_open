@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, Link, useMatch, useNavigate } from 'react-router-dom'
+import { Container, AppBar, Toolbar, Button, Typography } from '@mui/material'
 import Blog from './components/Blog'
 import BlogList from './components/BlogList'
 import NewBlogForm from './components/CreateBlog'
@@ -42,7 +43,7 @@ const App = () => {
       if(newBlog) {
         setBlogs(blogs.concat(newBlog).sort((a,b) => b.likes - a.likes))
       }
-      displayMessage({ msg: `Blog ${newBlog.title} added succesfully.`, msgType: 'message' } )
+      displayMessage({ msg: `Blog ${newBlog.title} added succesfully.`, msgType: 'success' } )
     } catch (e) {
       if (e.response.data.error) {
         if(e.response.data.error === 'token expired') {
@@ -77,12 +78,12 @@ const App = () => {
         prevBlogs.filter(b => b.id !== blog.id)
       )
       navigate('/')
-      displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'message' })
+      displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'success' })
     } catch (e) {
       if (e.response.data.error) {
         if(e.response.data.error === 'token expired') {
           window.localStorage.removeItem('loggedBlogListUser')
-          displayMessage({ msg:'Your session expired and you have been logged out. Please login in again to continue.', msgType: 'error' })
+          displayMessage({ msg:'Your session expired and you have been logged out. Please login in again to continue.', msgType: 'warning' })
         } else {
           displayMessage({ msg:e.response.data.error, msgType: 'error' })
         }
@@ -107,18 +108,21 @@ const App = () => {
     setTimeout(() => setMessage({ msg:null, msgType:null }), 7000)
   }
 
-  const padding = {
-    padding: 5
-  }
+  const buttonStyle = { '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }
+
   return (
-    <div>
-      <Notification message={ message } />
-      <div>
-        <Link style={padding} to="/">Blogs</Link>
-        {user && (<Link style={padding} to="/newblog">New Blog</Link>)}
-        {!user && (<Link style={padding} to="/login">Login</Link>)}
-        {user && (<button onClick={handleLogout}>Logout</button>)}
-      </div>
+    <Container>
+      <AppBar position='static'>
+        <Toolbar>
+          <Typography variant='h6' sx={{ flexGrow: 1 }}>Blog App</Typography>
+          <Button color='inherit' component={Link} to='/' sx={buttonStyle} >Blogs</Button>
+          {user && (<Button color='inherit' variant='text' component={Link} to="/newblog" sx={buttonStyle}>New Blog</Button>)}
+          {!user && (<Button color='inherit' variant='text' component={Link} to="/login" sx={buttonStyle}>Login</Button>)}
+          {user && (<Button color='inherit' variant='text' onClick={handleLogout} sx={buttonStyle}>Logout</Button>)}
+        </Toolbar>
+      </AppBar>
+
+      {message.msg && <Notification message={ message } />}
 
       <Routes>
         <Route path="/" element={<BlogList blogs={blogs} user={user} updateBlogLikes={updateBlogLikes} removeBlog={removeBlog} />}></Route>
@@ -126,7 +130,7 @@ const App = () => {
         <Route path="/newblog" element={(user && <NewBlogForm addNewBlog={addBlog} />)} />
         <Route path="/login" element={<LoginForm onLoginSuccess={setUser} showMsg={displayMessage} />} />
       </Routes>
-    </div>
+    </Container>
   )
 }
 
