@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import styled from 'styled-components'
 import NoteList from './components/NoteList'
 import Home from './components/Home'
-import Footer from './components/Footer'
+// import Footer from './components/Footer'
 import Note from './components/Note'
 import NoteForm from './components/NoteForm'
 import noteService from './services/notes'
@@ -55,13 +56,29 @@ const App = () => {
     padding: 5
   }
 
+  const Page = styled.div`
+    padding: 1em;
+    background: papayawhip;
+  `
+
+  const Navigation = styled.div`
+    background: BurlyWood;
+    padding: 1em;
+  `
+
+  const Footer = styled.div`
+    background: Chocolate;
+    padding: 1em;
+    margin-top: 1em;
+  `
+
   return (
-    <div>
-      <div>
+    <Page>
+      <Navigation>
         <Link style={padding} to="/">home</Link>
         <Link style={padding} to="/notes">notes</Link>
         <Link style={padding} to="/create">new note</Link>
-      </div>
+      </Navigation>
 
       <Routes>
         <Route path="/notes/:id" element={<Note note={note} toggleImportanceOf={toggleImportanceOf} deleteNote={deleteNote}/>} />
@@ -69,8 +86,10 @@ const App = () => {
         <Route path="/create" element={<NoteForm createNote={addNote}/>} />
         <Route path="/" element={<Home />} />
       </Routes>
-      <Footer />
-    </div>
+      <Footer>
+        Note app, Department of Computer Science, University of Helsinki 2026
+      </Footer>
+    </Page>
   )
 }
 
