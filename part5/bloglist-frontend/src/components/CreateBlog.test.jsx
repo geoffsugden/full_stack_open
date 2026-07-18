@@ -1,12 +1,17 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import NewBlogForm from './CreateBlog'
 import { expect } from 'vitest'
 
 test('event handler called with expected information', async() => {
   const mockHandler = vi.fn()
 
-  render(<NewBlogForm addNewBlog={mockHandler} />)
+  render(
+    <MemoryRouter>
+      <NewBlogForm addNewBlog={mockHandler} />
+    </MemoryRouter>
+  )
 
   const user = userEvent.setup()
 
