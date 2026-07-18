@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { AppBar, Container, Toolbar, Button } from '@mui/material'
 import NoteList from './components/NoteList'
 import Home from './components/Home'
 import Footer from './components/Footer'
 import Note from './components/Note'
 import NoteForm from './components/NoteForm'
 import noteService from './services/notes'
+import Notification from './components/Notification'
 
 const App = () => {
   const [notes, setNotes] = useState([])
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
     noteService.getAll().then(initialNotes => {
@@ -19,7 +22,6 @@ const App = () => {
   const match = useMatch('/notes/:id')
   const note = match ? notes.find(note => note.id === match.params.id) : null
   const addNote = noteObject => {
-    noteFormRef.current.toggleVisibility()
     noteService.create(noteObject).then(returnedNote => {
       setNotes(notes.concat(returnedNote))
     })
@@ -41,7 +43,6 @@ const App = () => {
         setTimeout(() => {
           setErrorMessage(null)
         }, 5000)
-        //setNotes(notes.filter(n => n.id !== id))
       })
   }
 
@@ -51,17 +52,19 @@ const App = () => {
     })
   }
 
-  const padding = {
-    padding: 5
-  }
+  const hoverStyle = { '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }
 
   return (
-    <div>
-      <div>
-        <Link style={padding} to="/">home</Link>
-        <Link style={padding} to="/notes">notes</Link>
-        <Link style={padding} to="/create">new note</Link>
-      </div>
+    <Container>
+      <AppBar position='static'>
+        <Toolbar>
+          <Button color='inherit' component={Link} to="/" sx={hoverStyle}>home</Button>
+          <Button color='inherit' component={Link} to="/notes" sx={hoverStyle}>notes</Button>
+          <Button color='inherit' component={Link} to="/create" sx={hoverStyle}>new note</Button>
+        </Toolbar>
+      </AppBar>
+
+      <Notification message={notification} />
 
       <Routes>
         <Route path="/notes/:id" element={<Note note={note} toggleImportanceOf={toggleImportanceOf} deleteNote={deleteNote}/>} />
@@ -70,7 +73,7 @@ const App = () => {
         <Route path="/" element={<Home />} />
       </Routes>
       <Footer />
-    </div>
+    </Container>
   )
 }
 
