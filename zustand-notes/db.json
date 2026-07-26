@@ -13,11 +13,11 @@
     {
       "id": "3",
       "content": "Remember to sleep well",
-      "important": true
+      "important": false
     },
     {
       "content": "Hello world",
-      "important": false,
+      "important": true,
       "id": "GblcfAyXd4Y"
     }
   ],
