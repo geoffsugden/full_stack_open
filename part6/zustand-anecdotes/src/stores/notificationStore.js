@@ -4,7 +4,7 @@ const useNotificationStore = create((set,get) => ({
   notification: '',
   timeoutId: null,
   actions: {
-    setNotification: async (message) => {
+    setNotification: (message) => {
       const curTimeoutId = get().timeoutId
       if(curTimeoutId) { 
         clearTimeout(curTimeoutId)
