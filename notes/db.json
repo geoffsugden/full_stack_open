@@ -17,18 +17,23 @@
     },
     {
       "content": "Jingle Bells, Batman Smells",
-      "important": false,
+      "important": true,
       "id": "OuMzuR9-jGM"
     },
     {
       "content": "Submitting a note",
-      "important": true,
+      "important": false,
       "id": "2eGDKPR3Wfo"
     },
     {
       "content": "It's a me, aMario",
-      "important": false,
+      "important": true,
       "id": "aoumfbyqfx4"
+    },
+    {
+      "content": "Douglas Adam's randomly picked 42",
+      "important": true,
+      "id": "vCSdXxov4uc"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
