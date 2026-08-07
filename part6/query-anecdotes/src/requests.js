@@ -18,7 +18,9 @@ export const createAnecdote = async (newAnecdote) => {
   const response = await fetch(baseUrl, options)
 
   if (!response.ok) {
-    throw new Error('Failed to create anecdote')
+    const errValue = await response.json()
+    const errMsg = errValue.error === 'too short anecdote, must have length 5 or more' ? errValue.error : 'Failed to create Anecdote' 
+    throw new Error(errMsg)
   }
 
   return await response.json()

@@ -4,9 +4,6 @@ import Notification from './components/Notification'
 
 const App = () => {
   const { anecdotes, isPending, isError, updateAnecdote } = useAnecdotes()
-  const handleVote = (anecdote) => {
-    updateAnecdote(anecdote)
-  }
 
   if(isPending) {
     return <div>anecdotes arriving shortly...</div>
@@ -28,7 +25,7 @@ const App = () => {
           <div>{anecdote.content}</div>
           <div>
             has {anecdote.votes}
-            <button onClick={() => handleVote(anecdote)}>vote</button>
+            <button onClick={() => updateAnecdote(anecdote)}>vote</button>
           </div>
         </div>
       ))}
