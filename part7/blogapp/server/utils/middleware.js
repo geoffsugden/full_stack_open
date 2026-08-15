@@ -1,0 +1,58 @@
+const logger = require('./logger')
+const jwt = require('jsonwebtoken')
+
+const userExtractor = (request, response, next) => {
+  const auth = request.get('Authorization')
+  if(auth && auth.startsWith('Bearer ')) {
+    const decodedToken = jwt.verify(auth.replace('Bearer ', ''), process.env.SECRET)
+    if(!decodedToken.id) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
+    request.userId = decodedToken.id
+  }
+  next()
+}
+
+const requestLogger = (request, response, next) => {
+  logger.info('Method: ', request.method)
+  logger.info('Path: ', request.path)
+  logger.info('Body: ', request.body)
+  logger.info('---')
+  next()
+}
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+const errorHandler = (error, request, response, next) => {
+  logger.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  } else if (error.name === 'MongoServerError' && error.message.includes('E11000 duplicate key error')) {
+    let msg
+    if(error.message.includes('url')) {
+      msg = 'expected `url` to be unique'
+    } else if (error.message.includes('username')) {
+      msg = 'expected `username` to be unique'
+    } else {
+      msg = 'duplicate key error'
+    }
+    return response.status(409).json({ error: msg })
+  } else if (error.name === 'JsonWebTokenError') {
+    return response.status(401).json({ error: 'token invalid' })
+  } else if (error.name === 'TokenExpiredError') {
+    return response.status(401).json({ error: 'token expired' })
+  }
+  next(error)
+}
+
+module.exports = {
+  requestLogger,
+  unknownEndpoint,
+  errorHandler,
+  userExtractor
+}
