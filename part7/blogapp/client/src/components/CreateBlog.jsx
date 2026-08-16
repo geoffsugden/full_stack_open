@@ -9,7 +9,7 @@ const NewBlogForm = ({ addNewBlog }) => {
 
   const navigate = useNavigate()
 
-  const handleNewBlog = async (event) => {
+  const handleNewBlog = async event => {
     event.preventDefault()
 
     addNewBlog({ title, author, url })
@@ -21,13 +21,38 @@ const NewBlogForm = ({ addNewBlog }) => {
 
   return (
     <div>
-      <Typography variant='h4' sx={{ py: 2 }}>Add New Blog Listing</Typography>
+      <Typography variant='h4' sx={{ py: 2 }}>
+        Add New Blog Listing
+      </Typography>
       <form onSubmit={handleNewBlog} className='form-container'>
-        <TextField id='title' className='new-blog-input' type='text' value={title} label='title' onChange={(e) => setTitle(e.target.value)} />
-        <TextField id='author' className='new-blog-input' type='text' value={author} label='author' onChange={(e) => setAuthor(e.target.value)} />
-        <TextField id='url' className='new-blog-input' type='url' value={url} label='url' onChange={(e) => setUrl(e.target.value)} />
+        <TextField
+          id='title'
+          className='new-blog-input'
+          type='text'
+          value={title}
+          label='title'
+          onChange={e => setTitle(e.target.value)}
+        />
+        <TextField
+          id='author'
+          className='new-blog-input'
+          type='text'
+          value={author}
+          label='author'
+          onChange={e => setAuthor(e.target.value)}
+        />
+        <TextField
+          id='url'
+          className='new-blog-input'
+          type='url'
+          value={url}
+          label='url'
+          onChange={e => setUrl(e.target.value)}
+        />
 
-        <Button type='submit' variant='contained' style={{ marginTop: 10 }}>Create</Button>
+        <Button type='submit' variant='contained' style={{ marginTop: 10 }}>
+          Create
+        </Button>
       </form>
     </div>
   )

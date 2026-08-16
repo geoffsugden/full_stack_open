@@ -17,7 +17,7 @@ describe('BlogsAPI User / Login tests', () => {
 
     await rootUser.save()
 
-    for(const u of helper.initialUsers) {
+    for (const u of helper.initialUsers) {
       const pwHash = await bcrypt.hash(u.password, 10)
       const newUser = new User({ username: u.username, name: u.name, passwordHash: pwHash })
       await newUser.save()
@@ -25,7 +25,7 @@ describe('BlogsAPI User / Login tests', () => {
   })
 
   describe('User Retrieval Tests', () => {
-    test('All users retrieved from database', async() => {
+    test('All users retrieved from database', async () => {
       const users = await api
         .get('/api/users')
         .expect(200)
@@ -33,19 +33,14 @@ describe('BlogsAPI User / Login tests', () => {
 
       // numUsers should equal root + initial Users i.e. initialUsers + 1
       assert.strictEqual(users.body.length, helper.initialUsers.length + 1)
-
     })
   })
 
   describe('User Creation Tests', () => {
-    test('user creation fails with non-unique username', async() => {
+    test('user creation fails with non-unique username', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = {
-        username: usersAtStart[1].username,
-        name: usersAtStart[1].name,
-        password: 'password'
-      }
+      const newUser = { username: usersAtStart[1].username, name: usersAtStart[1].name, password: 'password' }
 
       const result = await api
         .post('/api/users')
@@ -58,14 +53,10 @@ describe('BlogsAPI User / Login tests', () => {
       assert.strictEqual(usersAtStart.length, usersAtEnd.length)
     })
 
-    test('user creation fails with username < 3 characters long', async() => {
+    test('user creation fails with username < 3 characters long', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = {
-        'username': 'no',
-        'name': 'This won\'t work',
-        'password': 'password'
-      }
+      const newUser = { username: 'no', name: "This won't work", password: 'password' }
 
       const userNamesAtStart = usersAtStart.map(u => u.username)
       assert(!userNamesAtStart.includes(newUser.username))
@@ -81,13 +72,10 @@ describe('BlogsAPI User / Login tests', () => {
       assert.strictEqual(usersAtStart.length, usersAtEnd.length)
     })
 
-    test('user creation fails no username', async() => {
+    test('user creation fails no username', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = {
-        'name': 'This won\'t work',
-        'password': 'password'
-      }
+      const newUser = { name: "This won't work", password: 'password' }
 
       const userNamesAtStart = usersAtStart.map(u => u.username)
       assert(!userNamesAtStart.includes(newUser.username))
@@ -103,14 +91,10 @@ describe('BlogsAPI User / Login tests', () => {
       assert.strictEqual(usersAtStart.length, usersAtEnd.length)
     })
 
-    test('user creation fails with password < 3 characters long.', async() => {
+    test('user creation fails with password < 3 characters long.', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = {
-        'username': 'badPassword',
-        'name': 'This won\'t work',
-        'password': 'n'
-      }
+      const newUser = { username: 'badPassword', name: "This won't work", password: 'n' }
 
       const result = await api
         .post('/api/users')
@@ -123,13 +107,10 @@ describe('BlogsAPI User / Login tests', () => {
       assert.strictEqual(usersAtEnd.length, usersAtStart.length)
     })
 
-    test('user creation fails with no password', async() => {
+    test('user creation fails with no password', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = {
-        'username': 'noPassword',
-        'name': 'This won\'t work'
-      }
+      const newUser = { username: 'noPassword', name: "This won't work" }
 
       const result = await api
         .post('/api/users')
@@ -140,17 +121,12 @@ describe('BlogsAPI User / Login tests', () => {
       assert(result.body.error.includes('password must be minimum 3 characters long.'))
       const usersAtEnd = await helper.usersInDb()
       assert.strictEqual(usersAtStart.length, usersAtEnd.length)
-
     })
 
     test('creation succeeds with a fresh username', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = {
-        username: 'elm34',
-        name: 'Elmo Puppet',
-        password: 'whatAMuppet'
-      }
+      const newUser = { username: 'elm34', name: 'Elmo Puppet', password: 'whatAMuppet' }
 
       const usernamesAtStart = usersAtStart.map(u => u.username)
       assert(!usernamesAtStart.includes(newUser.username))
@@ -171,7 +147,11 @@ describe('BlogsAPI User / Login tests', () => {
     test('creation fails with an existing username', async () => {
       const usersAtStart = await helper.usersInDb()
 
-      const newUser = { username: helper.initialUsers[1].username, name: helper.initialUsers[1].name, password: 'password' }
+      const newUser = {
+        username: helper.initialUsers[1].username,
+        name: helper.initialUsers[1].name,
+        password: 'password',
+      }
 
       const usernamesAtStart = usersAtStart.map(u => u.username)
       assert(usernamesAtStart.includes(newUser.username))

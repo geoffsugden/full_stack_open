@@ -7,10 +7,9 @@ const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
 
-
 const app = express()
 
-logger.info('connecting to ', config.MONGODB_URI)
+logger.info('connecting to mongodb')
 
 mongoose
   .connect(config.MONGODB_URI, { family: 4 })
@@ -29,7 +28,7 @@ app.use('/api/blogs', middleware.userExtractor, blogsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
 
-if(process.env.NODE_ENV === 'test') {
+if (process.env.NODE_ENV === 'test') {
   const testingRouter = require('./controllers/testing')
   app.use('/api/testing', testingRouter)
 }

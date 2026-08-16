@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import NewBlogForm from './CreateBlog'
 import { expect } from 'vitest'
 
-test('event handler called with expected information', async() => {
+test('event handler called with expected information', async () => {
   const mockHandler = vi.fn()
 
   render(

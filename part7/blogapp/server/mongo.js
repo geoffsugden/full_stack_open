@@ -25,12 +25,9 @@ const doStuff = async () => {
   await Blog.deleteMany({})
   await User.deleteMany({})
 
-  const promises = helper.initialUsers.map(async (user) => {
+  const promises = helper.initialUsers.map(async user => {
     const hash = await bcrypt.hash(user.password, 10)
-    return {
-      ...user,
-      passwordHash: hash
-    }
+    return { ...user, passwordHash: hash }
   })
 
   const users = await Promise.all(promises)
@@ -39,16 +36,9 @@ const doStuff = async () => {
 
   const user = await User.findOne({ username: 'gds48' })
 
-  const userForToken = ({
-    username: user.username,
-    id: user._id
-  })
+  const userForToken = { username: user.username, id: user._id }
 
-  const token = jwt.sign(
-    userForToken,
-    process.env.SECRET,
-    { expiresIn: 30 }
-  )
+  const token = jwt.sign(userForToken, process.env.SECRET, { expiresIn: 30 })
   console.log('==========================================================================')
   console.log('Token', token)
   console.log('==========================================================================')
@@ -58,10 +48,9 @@ const doStuff = async () => {
 }
 
 doStuff()
-mongoose.connect(url, { family: 4 })
-  .then(() => {
-  })
+mongoose
+  .connect(url, { family: 4 })
+  .then(() => {})
   .catch(error => {
     logger.error('error connecting to MongoDB: ', error.message)
   })
-

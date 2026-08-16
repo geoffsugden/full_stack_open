@@ -6,8 +6,8 @@ const lodash = require('lodash')
  * @param {*} blogs The array of blogs - must be an array of length zero or more.
  * @returns object containing The name of the author that has the most likes across all blogs and the total number of likes they have.
  */
-const mostLikes = (blogs) => {
-  if(blogs.length === 0) {
+const mostLikes = blogs => {
+  if (blogs.length === 0) {
     return null
   }
 
@@ -15,11 +15,10 @@ const mostLikes = (blogs) => {
 
   const authorTotals = lodash.map(groupedByAuthor, (authorLikes, authorName) => ({
     author: authorName,
-    likes: lodash.sumBy(authorLikes, 'likes')
+    likes: lodash.sumBy(authorLikes, 'likes'),
   }))
 
   return lodash.maxBy(authorTotals, 'likes')
-
 }
 
 /**
@@ -29,15 +28,12 @@ const mostLikes = (blogs) => {
  * @param {*} blogs The array of blogs - must be an array of length zero or more.
  * @returns Object The name of the author that has published the most blogs and count of blogs published
  */
-const mostBlogs = (blogs) => {
-  if(blogs.length === 0) {
+const mostBlogs = blogs => {
+  if (blogs.length === 0) {
     return null
   }
   const countBlogs = lodash.countBy(blogs, 'author')
-  const bloggerArray = Object.entries(countBlogs).map(([author, blogs]) => ({
-    author,
-    blogs,
-  }))
+  const bloggerArray = Object.entries(countBlogs).map(([author, blogs]) => ({ author, blogs }))
   return lodash.maxBy(bloggerArray, 'blogs')
 }
 
@@ -47,11 +43,11 @@ const mostBlogs = (blogs) => {
  * @param {*} blogs The array of blogs - must be an array of length zero or more.
  * @returns The single blog with the most likes.
  */
-const favouriteBlog = (blogs) => {
-  if(blogs.length === 0) {
+const favouriteBlog = blogs => {
+  if (blogs.length === 0) {
     return null
   }
-  return blogs.reduce((mostLikedBlog, curBlog) => curBlog.likes > mostLikedBlog.likes ? curBlog : mostLikedBlog)
+  return blogs.reduce((mostLikedBlog, curBlog) => (curBlog.likes > mostLikedBlog.likes ? curBlog : mostLikedBlog))
 }
 
 /**
@@ -60,10 +56,9 @@ const favouriteBlog = (blogs) => {
  * @param {*} blogs The array of blogs - must be an array of length zero or more.
  * @returns integer that is the sum of all likes across the array of blogs passed in.
  */
-const totalLikes = (blogs) => {
+const totalLikes = blogs => {
   return blogs.reduce((sum, blog) => sum + blog.likes, 0)
 }
-
 
 /**
  * A test for the tests. If this fails then our tests are serisouly wrong.
@@ -71,15 +66,9 @@ const totalLikes = (blogs) => {
  * @returns 1 - always
  */
 // eslint-disable-next-line no-unused-vars
-const dummy = (blogs) => {
+const dummy = blogs => {
   // returns 1, doesn't matter what you give it.
   return 1
 }
 
-module.exports = {
-  dummy,
-  totalLikes,
-  favouriteBlog,
-  mostBlogs,
-  mostLikes
-}
+module.exports = { dummy, totalLikes, favouriteBlog, mostBlogs, mostLikes }
