@@ -1,0 +1,19 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: 73px 1fr;
+  gap: 10px;
+  max-width: 400px;
+}
+
+button {
+  margin-top: 10px;
+  width: fit-content;
+}
+
+.blog {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
