@@ -72,12 +72,7 @@ const App = () => {
       <ErrorBoundary>
         <Routes>
           <Route path='/' element={<BlogList user={user} />}></Route>
-          <Route
-            path='/blogs/:id'
-            element={
-              <Blog loggedInUser={user} />
-            }
-          />
+          <Route path='/blogs/:id' element={<Blog loggedInUser={user} />} />
           <Route path='/newblog' element={user && <NewBlogForm />} />
           <Route path='/login' element={<LoginForm onLoginSuccess={setUser} showMsg={displayMessage} />} />
           <Route path='/*' element={<Error404 />} />

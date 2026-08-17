@@ -7,9 +7,9 @@ const Blog = ({ loggedInUser }) => {
   const { displayMessage } = useMessage()
   const navigate = useNavigate()
   const blogId = useParams()
- 
+
   const blog = retrieveBlog(blogId.id)
-  
+
   if (!blog) {
     return null
   }
