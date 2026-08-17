@@ -1,19 +1,40 @@
 import { Button, Typography, Paper, Link, Box } from '@mui/material'
+import { useBlogActions, useMessage } from '../store'
+import { useNavigate, useParams } from 'react-router-dom'
 
-const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing }) => {
+const Blog = ({ loggedInUser }) => {
+  const { retrieveBlog, updateBlogLikes, removeBlog } = useBlogActions()
+  const { displayMessage } = useMessage()
+  const navigate = useNavigate()
+  const blogId = useParams()
+ 
+  const blog = retrieveBlog(blogId.id)
+  
   if (!blog) {
     return null
   }
 
-  const addLike = async event => {
-    event.preventDefault()
-    updateLikes(blog)
-  }
-
-  const handleDeleteBlog = async event => {
-    event.preventDefault()
+  const handleDeleteBlog = async () => {
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      removeBlogListing(blog)
+      try {
+        await removeBlog(blog.id)
+        navigate('/')
+        displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'success' })
+      } catch (e) {
+        if (e.response.data.error) {
+          if (e.response.data.error === 'token expired') {
+            window.localStorage.removeItem('loggedBlogListUser')
+            displayMessage({
+              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
+              msgType: 'warning',
+            })
+          } else {
+            displayMessage({ msg: e.response.data.error, msgType: 'error' })
+          }
+        } else {
+          displayMessage({ msg: 'An unknown error occurred, please check your entry and try again.' })
+        }
+      }
     }
   }
 
@@ -39,7 +60,7 @@ const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing }) => {
         <Typography className='blog-likes' variant='body1'>
           {blog.likes} likes
           {canLike && (
-            <Button variant='outlined' className='like-button' onClick={addLike} sx={{ ml: 1 }}>
+            <Button variant='outlined' className='like-button' onClick={() => updateBlogLikes(blog)} sx={{ ml: 1 }}>
               Like
             </Button>
           )}

@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Typography } from '@mui/material'
+import { useBlogs } from '../store'
 import Blog from './Blog'
 
-const BlogList = ({ blogs }) => {
+const BlogList = () => {
+  const blogs = useBlogs()
+
   return (
     <div>
       <Typography variant='h5' sx={{ pt: 2 }}>
