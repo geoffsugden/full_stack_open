@@ -1,14 +1,16 @@
 import { Button, Typography, Paper, Link, Box } from '@mui/material'
-import { useBlogActions, useMessage } from '../store'
+import { useBlogs, useBlogActions } from '../stores/blogStore'
+import { useMessage } from '../stores/messageStore'
 import { useNavigate, useParams } from 'react-router-dom'
 
 const Blog = ({ loggedInUser }) => {
-  const { retrieveBlog, updateBlogLikes, removeBlog } = useBlogActions()
+  const blogs = useBlogs()
+  const { updateBlogLikes, removeBlog } = useBlogActions()
   const { displayMessage } = useMessage()
   const navigate = useNavigate()
   const blogId = useParams()
 
-  const blog = retrieveBlog(blogId.id)
+  const blog = blogs.find((b) => b.id === blogId.id)
 
   if (!blog) {
     return null

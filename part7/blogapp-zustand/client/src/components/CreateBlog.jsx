@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TextField, Button, Typography } from '@mui/material'
-import { useMessage, useBlogActions } from '../store'
+import { useBlogActions } from '../stores/blogStore'
+import { useMessage } from '../stores/messageStore'
 
 const NewBlogForm = () => {
   const { addBlog } = useBlogActions()
@@ -12,7 +13,7 @@ const NewBlogForm = () => {
 
   const navigate = useNavigate()
 
-  const handleNewBlog = async event => {
+  const handleNewBlog = async (event) => {
     event.preventDefault()
 
     try {
@@ -52,7 +53,7 @@ const NewBlogForm = () => {
           type='text'
           value={title}
           label='title'
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
         />
         <TextField
           id='author'
@@ -60,7 +61,7 @@ const NewBlogForm = () => {
           type='text'
           value={author}
           label='author'
-          onChange={e => setAuthor(e.target.value)}
+          onChange={(e) => setAuthor(e.target.value)}
         />
         <TextField
           id='url'
@@ -68,7 +69,7 @@ const NewBlogForm = () => {
           type='url'
           value={url}
           label='url'
-          onChange={e => setUrl(e.target.value)}
+          onChange={(e) => setUrl(e.target.value)}
         />
 
         <Button type='submit' variant='contained' style={{ marginTop: 10 }}>

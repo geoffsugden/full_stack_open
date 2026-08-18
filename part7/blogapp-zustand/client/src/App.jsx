@@ -1,40 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { Container, AppBar, Toolbar, Button, Typography } from '@mui/material'
-import { useMessage, useBlogActions } from './store'
+import { useBlogActions } from './stores/blogStore'
+import { useUserActions } from './stores/userStore'
+import { useUser } from './stores/userStore'
+import { useMessage } from './stores/messageStore'
 import Blog from './components/Blog'
 import BlogList from './components/BlogList'
 import NewBlogForm from './components/CreateBlog'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notifications'
 import Togglable from './components/Togglable'
-import blogService from './services/blogs'
 import ErrorBoundary from './components/ErrorBoundary'
 import Error404 from './components/Error404'
 
 const App = () => {
-  const [user, setUser] = useState(null)
-  const { initialize } = useBlogActions()
+  const user = useUser()
+  const { initialize: blogInit } = useBlogActions()
+  const { initialize: userInit, logout } = useUserActions()
   const { message, displayMessage } = useMessage()
 
   useEffect(() => {
-    initialize()
-  }, [initialize])
+    blogInit()
+  }, [blogInit])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogListUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+    userInit()
+  }, [userInit])
 
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    setUser(null)
-    localStorage.removeItem('loggedBlogListUser')
+    logout()
     navigate('/')
     displayMessage({ msg: 'You have been logged out', msgType: 'success' })
   }
@@ -71,10 +68,10 @@ const App = () => {
       <ErrorBoundary>{message.msg && <Notification message={message} />}</ErrorBoundary>
       <ErrorBoundary>
         <Routes>
-          <Route path='/' element={<BlogList user={user} />}></Route>
+          <Route path='/' element={<BlogList user={user} />} />
           <Route path='/blogs/:id' element={<Blog loggedInUser={user} />} />
           <Route path='/newblog' element={user && <NewBlogForm />} />
-          <Route path='/login' element={<LoginForm onLoginSuccess={setUser} showMsg={displayMessage} />} />
+          <Route path='/login' element={<LoginForm />} />
           <Route path='/*' element={<Error404 />} />
         </Routes>
       </ErrorBoundary>

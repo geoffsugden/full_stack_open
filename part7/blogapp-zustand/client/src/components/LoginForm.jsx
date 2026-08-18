@@ -1,28 +1,27 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TextField, Button, Typography } from '@mui/material'
-import login from '../services/login'
-import blogService from '../services/blogs'
+import { useUserActions } from '../stores/userStore'
+import { useMessage } from '../stores/messageStore'
 
-const LoginForm = ({ onLoginSuccess, showMsg }) => {
+const LoginForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const { login } = useUserActions()
+  const { displayMessage } = useMessage()
 
   const navigate = useNavigate()
-  const handlelogin = async event => {
+  const handlelogin = async (event) => {
     event.preventDefault()
 
     try {
       const user = await login({ username, password })
-      window.localStorage.setItem('loggedBlogListUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      onLoginSuccess(user)
       navigate('/')
       setUsername('')
       setPassword('')
-      showMsg({ msg: `Hello ${user.name} thankyou for using our humble application!`, msgType: 'success' })
+      displayMessage({ msg: `Hello ${user.name} thankyou for using our humble application!`, msgType: 'success' })
     } catch (e) {
-      showMsg({ msg: `Login failed due to ${e.response.data.error}`, msgType: 'error' })
+      displayMessage({ msg: `Login failed due to ${e.response.data.error}`, msgType: 'error' })
       console.log('Incorrect Credentials', e)
     }
   }
@@ -39,7 +38,7 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
           variant='standard'
           type='text'
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
         />
         <TextField
           id='password'
@@ -47,7 +46,7 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
           label='password'
           variant='standard'
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
         />
         <Button variant='contained' type='submit'>
           login

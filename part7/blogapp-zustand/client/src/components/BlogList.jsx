@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Typography } from '@mui/material'
-import { useBlogs } from '../store'
+import { useBlogs } from '../stores/blogStore'
 import Blog from './Blog'
 
 const BlogList = () => {
@@ -12,7 +12,7 @@ const BlogList = () => {
         Behold the favourite Blogs
       </Typography>
       <ul>
-        {blogs.map(blog => (
+        {blogs.map((blog) => (
           <li key={blog.id}>
             <Link to={`/blogs/${blog.id}`}>
               {blog.title} by {blog.author}
