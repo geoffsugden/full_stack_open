@@ -1,21 +1,22 @@
+import { useMatch } from 'react-router-dom'
 import { Button, Typography, Paper, Link, Box } from '@mui/material'
+import useBlogs from '../hooks/useBlogs'
 
-const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing }) => {
-  if (!blog) {
-    return null
-  }
+const Blog = ({ loggedInUser }) => {
+  const { blogs, isPending, isError, addLike, removeBlog } = useBlogs()
+  const match = useMatch('/blogs/:id')
 
-  const addLike = async event => {
-    event.preventDefault()
-    updateLikes(blog)
-  }
+  if (isPending) return <div>Loading...</div>
+  if (isError) return <div>Unable to fetch blogs.</div>
 
-  const handleDeleteBlog = async event => {
-    event.preventDefault()
-    if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-      removeBlogListing(blog)
-    }
-  }
+  const blog = blogs.find((b) => b.id === match.params.id)
+  if (!blog) return null
+
+  // const handleDeleteBlog = async () => {
+  //   if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+  //     removeBlogListing(blog)
+  //   }
+  // }
 
   const canDelete = loggedInUser && loggedInUser.username === blog.user.username
   const canLike = loggedInUser
@@ -39,7 +40,7 @@ const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing }) => {
         <Typography className='blog-likes' variant='body1'>
           {blog.likes} likes
           {canLike && (
-            <Button variant='outlined' className='like-button' onClick={addLike} sx={{ ml: 1 }}>
+            <Button variant='outlined' className='like-button' onClick={() => addLike(blog)} sx={{ ml: 1 }}>
               Like
             </Button>
           )}
@@ -49,7 +50,7 @@ const Blog = ({ blog, updateLikes, loggedInUser, removeBlogListing }) => {
             variant='outlined'
             color='error'
             className='remove-blog-button'
-            onClick={handleDeleteBlog}
+            onClick={() => removeBlog(blog)}
             sx={{ mb: 1 }}>
             Delete
           </Button>

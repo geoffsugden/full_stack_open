@@ -8,6 +8,6 @@
   "bracketSpacing": true,
   "objectWrap": "collapse",
   "bracketSameLine": true,
-  "arrowParens": "avoid",
+  "arrowParens": "always",
   "singleAttributePerLine": false
 }

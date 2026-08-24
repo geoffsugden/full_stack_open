@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TextField, Button, Typography } from '@mui/material'
 import login from '../services/login'
 import blogService from '../services/blogs'
+import { MessageContext } from '../MessageContext'
 
-const LoginForm = ({ onLoginSuccess, showMsg }) => {
+const LoginForm = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const { displayMessage } = useContext(MessageContext)
 
   const navigate = useNavigate()
-  const handlelogin = async event => {
+  const handlelogin = async (event) => {
     event.preventDefault()
 
     try {
@@ -20,9 +22,12 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
       navigate('/')
       setUsername('')
       setPassword('')
-      showMsg({ msg: `Hello ${user.name} thankyou for using our humble application!`, msgType: 'success' })
+      displayMessage(
+        { msg: `Hello ${user.name} thankyou for using our humble application!`, msgType: 'success' },
+        20_000
+      )
     } catch (e) {
-      showMsg({ msg: `Login failed due to ${e.response.data.error}`, msgType: 'error' })
+      displayMessage({ msg: `Login failed due to ${e.response.data.error}`, msgType: 'error' })
       console.log('Incorrect Credentials', e)
     }
   }
@@ -39,7 +44,7 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
           variant='standard'
           type='text'
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
         />
         <TextField
           id='password'
@@ -47,7 +52,7 @@ const LoginForm = ({ onLoginSuccess, showMsg }) => {
           label='password'
           variant='standard'
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
         />
         <Button variant='contained' type='submit'>
           login

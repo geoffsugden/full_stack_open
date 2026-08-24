@@ -1,13 +1,19 @@
 import { Alert } from '@mui/material'
+import { useContext } from 'react'
+import { MessageContext } from '../MessageContext'
 
-const Notification = ({ message }) => {
-  if (message === null) {
+const Notification = () => {
+  const { message } = useContext(MessageContext)
+
+  const { msg, msgType } = message
+
+  if (msg === null) {
     return null
   }
 
   return (
-    <Alert severity={message.msgType} sx={{ mt: 1 }}>
-      {message.msg}
+    <Alert severity={msgType} sx={{ mt: 1 }}>
+      {msg}
     </Alert>
   )
 }
