@@ -1,6 +1,6 @@
 import { Alert } from '@mui/material'
 import { useContext } from 'react'
-import { MessageContext } from '../MessageContext'
+import { MessageContext } from '../context/MessageContext'
 
 const Notification = () => {
   const { message } = useContext(MessageContext)

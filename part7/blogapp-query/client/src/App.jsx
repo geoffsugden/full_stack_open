@@ -1,41 +1,17 @@
-import { useState, useEffect, useContext } from 'react'
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'
-
+import { useContext } from 'react'
+import { Routes, Route, Link } from 'react-router-dom'
 import { Container, AppBar, Toolbar, Button, Typography } from '@mui/material'
 import Blog from './components/Blog'
 import BlogList from './components/BlogList'
 import NewBlogForm from './components/CreateBlog'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notifications'
-import blogService from './services/blogs'
 import ErrorBoundary from './components/ErrorBoundary'
 import Error404 from './components/Error404'
-import { MessageContext } from './MessageContext'
+import { UserContext } from './context/userContext'
 
 const App = () => {
-  const [user, setUser] = useState(null)
-  const { displayMessage } = useContext(MessageContext)
-
-  useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogListUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
-
-  const navigate = useNavigate()
-
-  const handleLogout = (event) => {
-    if (event) {
-      event.preventDefault()
-    }
-    setUser(null)
-    localStorage.removeItem('loggedBlogListUser')
-    navigate('/')
-    displayMessage({ msg: 'You have been logged out', msgType: 'success' })
-  }
+  const { user, userLogout } = useContext(UserContext)
 
   const buttonStyle = { '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }
 
@@ -60,7 +36,7 @@ const App = () => {
             </Button>
           )}
           {user && (
-            <Button color='inherit' variant='text' onClick={handleLogout} sx={buttonStyle}>
+            <Button color='inherit' variant='text' onClick={() => userLogout()} sx={buttonStyle}>
               Logout
             </Button>
           )}
@@ -74,7 +50,7 @@ const App = () => {
           <Route path='/' element={<BlogList user={user} />} />
           <Route path='/blogs/:id' element={<Blog loggedInUser={user} />} />
           <Route path='/newblog' element={user && <NewBlogForm />} />
-          <Route path='/login' element={<LoginForm onLoginSuccess={setUser} />} />
+          <Route path='/login' element={<LoginForm />} />
           <Route path='/*' element={<Error404 />} />
         </Routes>
       </ErrorBoundary>

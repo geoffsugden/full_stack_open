@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { MessageContext } from '../MessageContext'
+import { MessageContext } from '../context/MessageContext'
 import blogService from '../services/blogs'
 
 export const useBlogs = () => {

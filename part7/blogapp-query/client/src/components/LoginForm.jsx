@@ -1,35 +1,18 @@
 import { useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { TextField, Button, Typography } from '@mui/material'
-import login from '../services/login'
-import blogService from '../services/blogs'
-import { MessageContext } from '../MessageContext'
+import { UserContext } from '../context/userContext'
 
-const LoginForm = ({ onLoginSuccess }) => {
+const LoginForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { displayMessage } = useContext(MessageContext)
+  const { userLogin } = useContext(UserContext)
 
-  const navigate = useNavigate()
-  const handlelogin = async (event) => {
+  const handlelogin = (event) => {
     event.preventDefault()
 
-    try {
-      const user = await login({ username, password })
-      window.localStorage.setItem('loggedBlogListUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      onLoginSuccess(user)
-      navigate('/')
-      setUsername('')
-      setPassword('')
-      displayMessage(
-        { msg: `Hello ${user.name} thankyou for using our humble application!`, msgType: 'success' },
-        20_000
-      )
-    } catch (e) {
-      displayMessage({ msg: `Login failed due to ${e.response.data.error}`, msgType: 'error' })
-      console.log('Incorrect Credentials', e)
-    }
+    userLogin({ username, password })
+    setUsername('')
+    setPassword('')
   }
 
   return (
