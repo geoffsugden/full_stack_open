@@ -2,12 +2,14 @@ import { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { MessageContext } from '../context/MessageContext'
+import { UserContext } from '../context/userContext'
 import blogService from '../services/blogs'
 
 export const useBlogs = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { displayMessage } = useContext(MessageContext)
+  const { setUser } = useContext(UserContext)
 
   const newBlogMutation = useMutation({
     mutationFn: blogService.createBlogListing,
@@ -58,7 +60,7 @@ export const useBlogs = () => {
       } catch (e) {
         if (e.response) {
           if (e.response.data.error === 'token expired') {
-            // setUser(null)
+            setUser(null)
             window.localStorage.removeItem('loggedBlogListUser')
             displayMessage({
               msg: 'Your session expired and you have been logged out. Please login in again to continue.',
@@ -76,7 +78,30 @@ export const useBlogs = () => {
         }
       }
     },
-    addLike: (blog) => updateBlogMutation.mutate({ id: blog.id, likes: blog.likes + 1 }),
+    addLike: (blog) => {
+      try {
+        updateBlogMutation.mutate({ id: blog.id, likes: blog.likes + 1 })
+      } catch (e) {
+        if (e.response) {
+          if (e.reponse.data.error === 'token expired') {
+            setUser(null)
+            window.localStorage.removeItem('loggedBlogListUser')
+            displayMessage({
+              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
+              msgType: 'info',
+            })
+          } else {
+            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
+          }
+        } else {
+          console.log('An unknown error occurred', e)
+          displayMessage({
+            msg: 'An unknown error occurred, please check your entry and try again.',
+            msgType: 'warning',
+          })
+        }
+      }
+    },
     removeBlog: (blog) => {
       try {
         if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
@@ -87,6 +112,7 @@ export const useBlogs = () => {
       } catch (e) {
         if (e.response) {
           if (e.reponse.data.error === 'token expired') {
+            setUser(null)
             window.localStorage.removeItem('loggedBlogListUser')
             displayMessage({
               msg: 'Your session expired and you have been logged out. Please login in again to continue.',
