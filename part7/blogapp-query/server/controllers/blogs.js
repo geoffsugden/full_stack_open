@@ -34,7 +34,7 @@ blogsRouter.post('/', async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
-  const { title, author, url, likes } = request.body
+  const { title, author, url, likes, comments } = request.body
 
   const blog = await Blog.findById(request.params.id)
   if (!blog) {
@@ -53,6 +53,7 @@ blogsRouter.put('/:id', async (request, response) => {
       blog.author = author ?? blog.author
       blog.url = url ?? blog.url
       blog.likes = likes ?? blog.likes
+      blog.comments = comments ?? blog.comments
 
       const updatedBlog = await blog.save()
       response.status(200).json(updatedBlog)
