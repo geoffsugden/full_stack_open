@@ -12,7 +12,7 @@ const NewBlogForm = () => {
 
   const navigate = useNavigate()
 
-  const handleNewBlog = async (event) => {
+  const handleNewBlog = (event) => {
     event.preventDefault()
 
     addBlog({ title: title.value, author: author.value, url: url.value })

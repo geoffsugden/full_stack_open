@@ -1,9 +1,12 @@
 import { useMatch } from 'react-router-dom'
-import { Button, Typography, Paper, Link, Box } from '@mui/material'
+import { TextField, Button, Typography, Paper, Link, Box } from '@mui/material'
 import useBlogs from '../hooks/useBlogs'
+import useField from '../hooks/useField'
 
 const Blog = ({ loggedInUser }) => {
-  const { blogs, isPending, isError, addLike, removeBlog } = useBlogs()
+  const { blogs, isPending, isError, addLike, updateBlog, removeBlog } = useBlogs()
+  // eslint-disable-next-line no-unused-vars
+  const { reset: resetComment, ...comment } = useField({ id: 'commment', type: 'text', label: 'commment' })
   const match = useMatch('/blogs/:id')
 
   if (isPending) return <div>Loading...</div>
@@ -12,8 +15,14 @@ const Blog = ({ loggedInUser }) => {
   const blog = blogs.find((b) => b.id === match.params.id)
   if (!blog) return null
 
+  const handleAddComment = (event) => {
+    event.preventDefault()
+    updateBlog({ ...blog, comments: blog.comments.concat({ comment: comment.value }) })
+  }
+
   const canDelete = loggedInUser && loggedInUser.username === blog.user.username
   const canLike = loggedInUser
+  const canComment = canLike
 
   return (
     <Paper className='blog' sx={{ mt: 1, p: 2 }}>
@@ -50,6 +59,22 @@ const Blog = ({ loggedInUser }) => {
           </Button>
         )}
       </Box>
+      <Typography className='blog-comments-header' variant='h6'>
+        Comments
+      </Typography>
+      <ul>
+        {blog.comments.map((comment) => (
+          <li key={comment.id}>{comment.comment}</li>
+        ))}
+      </ul>
+      {canComment && (
+        <form onSubmit={handleAddComment} className='comment-container'>
+          <TextField {...comment} variant='outlined' />
+          <Button variant='outlined' color='primary' className='add-comment-button' type='submit'>
+            Add Comment
+          </Button>
+        </form>
+      )}
     </Paper>
   )
 }

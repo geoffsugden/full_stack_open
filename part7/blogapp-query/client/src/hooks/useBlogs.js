@@ -25,7 +25,18 @@ export const useBlogs = () => {
       const blogs = queryClient.getQueryData(['blogs'])
       queryClient.setQueryData(
         ['blogs'],
-        blogs.map((blog) => (blog.id === data.id ? { ...blog, likes: data.likes } : blog))
+        blogs.map((blog) =>
+          blog.id === data.id
+            ? {
+                ...blog,
+                title: data.title,
+                author: data.author,
+                url: data.url,
+                likes: data.likes,
+                comments: data.comments,
+              }
+            : blog
+        )
       )
     },
   })
@@ -81,6 +92,30 @@ export const useBlogs = () => {
     addLike: (blog) => {
       try {
         updateBlogMutation.mutate({ id: blog.id, likes: blog.likes + 1 })
+      } catch (e) {
+        if (e.response) {
+          if (e.reponse.data.error === 'token expired') {
+            setUser(null)
+            window.localStorage.removeItem('loggedBlogListUser')
+            displayMessage({
+              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
+              msgType: 'info',
+            })
+          } else {
+            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
+          }
+        } else {
+          console.log('An unknown error occurred', e)
+          displayMessage({
+            msg: 'An unknown error occurred, please check your entry and try again.',
+            msgType: 'warning',
+          })
+        }
+      }
+    },
+    updateBlog: (blog) => {
+      try {
+        updateBlogMutation.mutate(blog)
       } catch (e) {
         if (e.response) {
           if (e.reponse.data.error === 'token expired') {

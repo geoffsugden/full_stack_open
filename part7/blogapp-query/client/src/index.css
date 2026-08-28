@@ -6,6 +6,14 @@
   max-width: 400px;
 }
 
+.comment-container {
+  display: flex;
+  flex-direction: horizontal;
+  grid-template-columns: 73px 1fr;
+  gap: 10px;
+  max-width: 400px;
+}
+
 button {
   margin-top: 10px;
   width: fit-content;
