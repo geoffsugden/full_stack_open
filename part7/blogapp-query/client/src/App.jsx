@@ -3,6 +3,8 @@ import { Routes, Route, Link } from 'react-router-dom'
 import { Container, AppBar, Toolbar, Button, Typography } from '@mui/material'
 import Blog from './components/Blog'
 import BlogList from './components/BlogList'
+import UserList from './components/UserList'
+import User from './components/User'
 import NewBlogForm from './components/CreateBlog'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notifications'
@@ -24,6 +26,9 @@ const App = () => {
           </Typography>
           <Button color='inherit' component={Link} to='/' sx={buttonStyle}>
             Blogs
+          </Button>
+          <Button color='inherit' component={Link} to='/users' sx={buttonStyle}>
+            Users
           </Button>
           {user && (
             <Button color='inherit' variant='text' component={Link} to='/newblog' sx={buttonStyle}>
@@ -48,6 +53,8 @@ const App = () => {
       <ErrorBoundary>
         <Routes>
           <Route path='/' element={<BlogList user={user} />} />
+          <Route path='/users' element={<UserList />} />
+          <Route path='/users/:id' element={<User />} />
           <Route path='/blogs/:id' element={<Blog loggedInUser={user} />} />
           <Route path='/newblog' element={user && <NewBlogForm />} />
           <Route path='/login' element={<LoginForm />} />

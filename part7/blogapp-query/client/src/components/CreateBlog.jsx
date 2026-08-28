@@ -1,24 +1,22 @@
-import { useState } from 'react'
+/* eslint-disable no-unused-vars */
 import { useNavigate } from 'react-router-dom'
 import { TextField, Button, Typography } from '@mui/material'
 import { useBlogs } from '../hooks/useBlogs'
+import useField from '../hooks/useField'
 
 const NewBlogForm = () => {
   const { addBlog } = useBlogs()
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
+  const { reset: resetTitle, ...title } = useField({ id: 'title', type: 'text', label: 'title' })
+  const { reset: resetAuthor, ...author } = useField({ id: 'author', type: 'text', label: 'author' })
+  const { reset: resetUrl, ...url } = useField({ id: 'url', type: 'url', label: 'url' })
 
   const navigate = useNavigate()
 
   const handleNewBlog = async (event) => {
     event.preventDefault()
 
-    addBlog({ title, author, url })
+    addBlog({ title: title.value, author: author.value, url: url.value })
     navigate('/')
-    setTitle('')
-    setAuthor('')
-    setUrl('')
   }
 
   return (
@@ -27,30 +25,9 @@ const NewBlogForm = () => {
         Add New Blog Listing
       </Typography>
       <form onSubmit={handleNewBlog} className='form-container'>
-        <TextField
-          id='title'
-          className='new-blog-input'
-          type='text'
-          value={title}
-          label='title'
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <TextField
-          id='author'
-          className='new-blog-input'
-          type='text'
-          value={author}
-          label='author'
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-        <TextField
-          id='url'
-          className='new-blog-input'
-          type='url'
-          value={url}
-          label='url'
-          onChange={(e) => setUrl(e.target.value)}
-        />
+        <TextField {...title} className='new-blog-input' />
+        <TextField {...author} className='new-blog-input' />
+        <TextField {...url} className='new-blog-input' />
 
         <Button type='submit' variant='contained' style={{ marginTop: 10 }}>
           Create

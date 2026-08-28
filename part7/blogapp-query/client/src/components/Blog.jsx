@@ -12,12 +12,6 @@ const Blog = ({ loggedInUser }) => {
   const blog = blogs.find((b) => b.id === match.params.id)
   if (!blog) return null
 
-  // const handleDeleteBlog = async () => {
-  //   if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-  //     removeBlogListing(blog)
-  //   }
-  // }
-
   const canDelete = loggedInUser && loggedInUser.username === blog.user.username
   const canLike = loggedInUser
 
