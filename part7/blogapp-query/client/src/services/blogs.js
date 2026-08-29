@@ -14,6 +14,20 @@ const updateBlogListing = async (blogListing) => {
   return response.data
 }
 
+const likeBlog = async (blog) => {
+  const config = { headers: { Authorization: token } }
+  const url = `${baseUrl}/${blog.id}/like`
+  const response = await axios.put(url, blog, config)
+  return response.data
+}
+
+const addComment = async (blog) => {
+  const config = { headers: { Authorization: token } }
+  const url = `${baseUrl}/${blog.id}/comment`
+  const response = await axios.put(url, blog, config)
+  return response.data
+}
+
 const createBlogListing = async (blogListing) => {
   const config = { headers: { Authorization: token } }
   const response = await axios.post(baseUrl, blogListing, config)
@@ -31,4 +45,4 @@ const getAll = async () => {
   return response.data
 }
 
-export default { getAll, setToken, createBlogListing, updateBlogListing, removeBlog }
+export default { getAll, setToken, createBlogListing, updateBlogListing, removeBlog, likeBlog, addComment }

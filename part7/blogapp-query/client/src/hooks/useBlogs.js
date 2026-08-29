@@ -19,6 +19,49 @@ export const useBlogs = () => {
     },
   })
 
+  const likeBlogMutation = useMutation({
+    mutationFn: blogService.likeBlog,
+    onSuccess: (data) => {
+      const blogs = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(
+        ['blogs'],
+        blogs.map((blog) =>
+          blog.id === data.id
+            ? {
+                ...blog,
+                title: data.title,
+                author: data.author,
+                url: data.url,
+                likes: data.likes,
+                comments: data.comments,
+              }
+            : blog
+        )
+      )
+    },
+  })
+
+  const addBlogCommentMutation = useMutation({
+    mutationFn: blogService.addComment,
+    onSuccess: (data) => {
+      const blogs = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(
+        ['blogs'],
+        blogs.map((blog) =>
+          blog.id === data.id
+            ? {
+                ...blog,
+                title: data.title,
+                author: data.author,
+                url: data.url,
+                likes: data.likes,
+                comments: data.comments,
+              }
+            : blog
+        )
+      )
+    },
+  })
   const updateBlogMutation = useMutation({
     mutationFn: blogService.updateBlogListing,
     onSuccess: (data) => {
@@ -91,7 +134,31 @@ export const useBlogs = () => {
     },
     addLike: (blog) => {
       try {
-        updateBlogMutation.mutate({ id: blog.id, likes: blog.likes + 1 })
+        likeBlogMutation.mutate(blog)
+      } catch (e) {
+        if (e.response) {
+          if (e.reponse.data.error === 'token expired') {
+            setUser(null)
+            window.localStorage.removeItem('loggedBlogListUser')
+            displayMessage({
+              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
+              msgType: 'info',
+            })
+          } else {
+            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
+          }
+        } else {
+          console.log('An unknown error occurred', e)
+          displayMessage({
+            msg: 'An unknown error occurred, please check your entry and try again.',
+            msgType: 'warning',
+          })
+        }
+      }
+    },
+    addComment: (blog) => {
+      try {
+        addBlogCommentMutation.mutate(blog)
       } catch (e) {
         if (e.response) {
           if (e.reponse.data.error === 'token expired') {

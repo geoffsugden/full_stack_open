@@ -1,5 +1,4 @@
 const blogsRouter = require('express').Router()
-
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
@@ -38,6 +37,47 @@ blogsRouter.post('/', async (request, response) => {
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
   response.status(201).json(savedBlog)
+})
+
+blogsRouter.put('/:id/like', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+
+  if (!blog) {
+    return response.status(404).end()
+  } else {
+    if (blog.user.toString() !== request.userId) {
+      if (request.userId) {
+        return response.status(403).json({ error: 'blog can only be modified by its creator' })
+      } else {
+        return response.status(401).json({ error: 'you must be logged in to perform this operation' })
+      }
+    } else {
+      blog.likes += 1
+      const updatedBlog = await blog.save()
+      response.status(200).json(updatedBlog)
+    }
+  }
+})
+
+blogsRouter.put('/:id/comment', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+  const { comments } = request.body
+
+  if (!blog) {
+    return response.status(404).end()
+  } else {
+    if (blog.user.toString() !== request.userId) {
+      if (request.userId) {
+        return response.status(403).json({ error: 'blog can only be modified by its creator' })
+      } else {
+        return response.status(401).json({ error: 'you must be logged in to perform this operation' })
+      }
+    } else {
+      blog.comments = comments
+      const updatedBlog = await blog.save()
+      response.status(200).json(updatedBlog)
+    }
+  }
 })
 
 blogsRouter.put('/:id', async (request, response) => {
