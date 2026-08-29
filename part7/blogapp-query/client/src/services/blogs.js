@@ -21,10 +21,10 @@ const likeBlog = async (blog) => {
   return response.data
 }
 
-const addComment = async (blog) => {
+const addComment = async ({ blogId, comment }) => {
   const config = { headers: { Authorization: token } }
-  const url = `${baseUrl}/${blog.id}/comment`
-  const response = await axios.put(url, blog, config)
+  const url = `${baseUrl}/${blogId}/comment`
+  const response = await axios.put(url, { comment: comment }, config)
   return response.data
 }
 

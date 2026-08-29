@@ -11,12 +11,32 @@ export const useBlogs = () => {
   const { displayMessage } = useContext(MessageContext)
   const { setUser } = useContext(UserContext)
 
+  const handleError = (error) => {
+    if (error.response) {
+      if (error.response.data.error === 'token expired') {
+        setUser(null)
+        window.localStorage.removeItem('loggedBlogListUser')
+        displayMessage({
+          msg: 'Your session expired and you have been logged out. Please login in again to continue.',
+          msgType: 'warning',
+        })
+      } else {
+        displayMessage({ msg: error.response.data.error, msgType: 'warning' })
+      }
+    } else {
+      console.log('An unknown error occurred', error)
+      displayMessage({ msg: 'An unknown error occurred, please check your entry and try again.', msgType: 'warning' })
+    }
+  }
+
   const newBlogMutation = useMutation({
     mutationFn: blogService.createBlogListing,
     onSuccess: (data) => {
       const blogs = queryClient.getQueryData(['blogs'])
       queryClient.setQueryData(['blogs'], [...blogs, data])
+      displayMessage({ msg: `Blog ${data.title} added succesfully.`, msgType: 'success' })
     },
+    onError: handleError,
   })
 
   const likeBlogMutation = useMutation({
@@ -25,20 +45,10 @@ export const useBlogs = () => {
       const blogs = queryClient.getQueryData(['blogs'])
       queryClient.setQueryData(
         ['blogs'],
-        blogs.map((blog) =>
-          blog.id === data.id
-            ? {
-                ...blog,
-                title: data.title,
-                author: data.author,
-                url: data.url,
-                likes: data.likes,
-                comments: data.comments,
-              }
-            : blog
-        )
+        blogs.map((blog) => (blog.id === data.id ? { ...blog, likes: data.likes } : blog))
       )
     },
+    onError: handleError,
   })
 
   const addBlogCommentMutation = useMutation({
@@ -47,41 +57,10 @@ export const useBlogs = () => {
       const blogs = queryClient.getQueryData(['blogs'])
       queryClient.setQueryData(
         ['blogs'],
-        blogs.map((blog) =>
-          blog.id === data.id
-            ? {
-                ...blog,
-                title: data.title,
-                author: data.author,
-                url: data.url,
-                likes: data.likes,
-                comments: data.comments,
-              }
-            : blog
-        )
+        blogs.map((blog) => (blog.id === data.id ? { ...blog, comments: data.comments } : blog))
       )
     },
-  })
-  const updateBlogMutation = useMutation({
-    mutationFn: blogService.updateBlogListing,
-    onSuccess: (data) => {
-      const blogs = queryClient.getQueryData(['blogs'])
-      queryClient.setQueryData(
-        ['blogs'],
-        blogs.map((blog) =>
-          blog.id === data.id
-            ? {
-                ...blog,
-                title: data.title,
-                author: data.author,
-                url: data.url,
-                likes: data.likes,
-                comments: data.comments,
-              }
-            : blog
-        )
-      )
-    },
+    onError: handleError,
   })
 
   const removeBlogMutation = useMutation({
@@ -93,6 +72,7 @@ export const useBlogs = () => {
         blogs.filter((blog) => blog.id !== data).sort((a, b) => b.likes - a.likes)
       )
     },
+    onError: handleError,
   })
 
   const result = useQuery({
@@ -107,129 +87,16 @@ export const useBlogs = () => {
     blogs: result.data,
     isPending: result.isPending,
     isError: result.isError,
-    addBlog: (blog) => {
-      try {
-        newBlogMutation.mutate(blog)
-        displayMessage({ msg: `Blog ${blog.title} added succesfully.`, msgType: 'success' })
-      } catch (e) {
-        if (e.response) {
-          if (e.response.data.error === 'token expired') {
-            setUser(null)
-            window.localStorage.removeItem('loggedBlogListUser')
-            displayMessage({
-              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
-              msgType: 'info',
-            })
-          } else {
-            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
-          }
-        } else {
-          console.log('An unknown error occurred', e)
-          displayMessage({
-            msg: 'An unknown error occurred, please check your entry and try again.',
-            msgType: 'warning',
-          })
-        }
-      }
-    },
-    addLike: (blog) => {
-      try {
-        likeBlogMutation.mutate(blog)
-      } catch (e) {
-        if (e.response) {
-          if (e.reponse.data.error === 'token expired') {
-            setUser(null)
-            window.localStorage.removeItem('loggedBlogListUser')
-            displayMessage({
-              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
-              msgType: 'info',
-            })
-          } else {
-            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
-          }
-        } else {
-          console.log('An unknown error occurred', e)
-          displayMessage({
-            msg: 'An unknown error occurred, please check your entry and try again.',
-            msgType: 'warning',
-          })
-        }
-      }
-    },
-    addComment: (blog) => {
-      try {
-        addBlogCommentMutation.mutate(blog)
-      } catch (e) {
-        if (e.response) {
-          if (e.reponse.data.error === 'token expired') {
-            setUser(null)
-            window.localStorage.removeItem('loggedBlogListUser')
-            displayMessage({
-              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
-              msgType: 'info',
-            })
-          } else {
-            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
-          }
-        } else {
-          console.log('An unknown error occurred', e)
-          displayMessage({
-            msg: 'An unknown error occurred, please check your entry and try again.',
-            msgType: 'warning',
-          })
-        }
-      }
-    },
-    updateBlog: (blog) => {
-      try {
-        updateBlogMutation.mutate(blog)
-      } catch (e) {
-        if (e.response) {
-          if (e.reponse.data.error === 'token expired') {
-            setUser(null)
-            window.localStorage.removeItem('loggedBlogListUser')
-            displayMessage({
-              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
-              msgType: 'info',
-            })
-          } else {
-            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
-          }
-        } else {
-          console.log('An unknown error occurred', e)
-          displayMessage({
-            msg: 'An unknown error occurred, please check your entry and try again.',
-            msgType: 'warning',
-          })
-        }
-      }
+    addBlog: (blog) => newBlogMutation.mutate(blog),
+    addLike: (blog) => likeBlogMutation.mutate(blog),
+    addComment: (blogId, comment) => {
+      addBlogCommentMutation.mutate({ blogId, comment })
     },
     removeBlog: (blog) => {
-      try {
-        if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-          removeBlogMutation.mutate(blog.id)
-          navigate('/')
-          displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'success' })
-        }
-      } catch (e) {
-        if (e.response) {
-          if (e.reponse.data.error === 'token expired') {
-            setUser(null)
-            window.localStorage.removeItem('loggedBlogListUser')
-            displayMessage({
-              msg: 'Your session expired and you have been logged out. Please login in again to continue.',
-              msgType: 'info',
-            })
-          } else {
-            displayMessage({ msg: e.response.data.error, msgType: 'warning' })
-          }
-        } else {
-          console.log('An unknown error occurred', e)
-          displayMessage({
-            msg: 'An unknown error occurred, please check your entry and try again.',
-            msgType: 'warning',
-          })
-        }
+      if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+        removeBlogMutation.mutate(blog.id)
+        navigate('/')
+        displayMessage({ msg: `Blog ${blog.title} by ${blog.author} removed.`, msgType: 'success' })
       }
     },
   }

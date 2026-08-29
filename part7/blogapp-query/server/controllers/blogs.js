@@ -61,19 +61,17 @@ blogsRouter.put('/:id/like', async (request, response) => {
 
 blogsRouter.put('/:id/comment', async (request, response) => {
   const blog = await Blog.findById(request.params.id)
-  const { comments } = request.body
+
+  const { comment } = request.body
 
   if (!blog) {
     return response.status(404).end()
   } else {
-    if (blog.user.toString() !== request.userId) {
-      if (request.userId) {
-        return response.status(403).json({ error: 'blog can only be modified by its creator' })
-      } else {
-        return response.status(401).json({ error: 'you must be logged in to perform this operation' })
-      }
+    if (!blog.user) {
+      return response.status(401).json({ error: 'you must be logged in to perform this operation' })
     } else {
-      blog.comments = comments
+      const comments = blog.comments
+      blog.comments = comments.concat({ comment: comment })
       const updatedBlog = await blog.save()
       response.status(200).json(updatedBlog)
     }

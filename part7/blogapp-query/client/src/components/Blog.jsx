@@ -4,7 +4,7 @@ import useBlogs from '../hooks/useBlogs'
 import useField from '../hooks/useField'
 
 const Blog = ({ loggedInUser }) => {
-  const { blogs, isPending, isError, addLike, updateBlog, removeBlog } = useBlogs()
+  const { blogs, isPending, isError, addLike, addComment, removeBlog } = useBlogs()
   // eslint-disable-next-line no-unused-vars
   const { reset: resetComment, ...comment } = useField({ id: 'commment', type: 'text', label: 'commment' })
   const match = useMatch('/blogs/:id')
@@ -17,12 +17,12 @@ const Blog = ({ loggedInUser }) => {
 
   const handleAddComment = (event) => {
     event.preventDefault()
-    updateBlog({ ...blog, comments: blog.comments.concat({ comment: comment.value }) })
+    addComment(blog.id, comment.value)
   }
 
-  const canDelete = loggedInUser && loggedInUser.username === blog.user.username
-  const canLike = loggedInUser
-  const canComment = canLike
+  const canLike = loggedInUser && loggedInUser.username === blog.user.username
+  const canDelete = canLike
+  const canComment = loggedInUser
 
   return (
     <Paper className='blog' sx={{ mt: 1, p: 2 }}>
