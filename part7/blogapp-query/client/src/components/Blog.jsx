@@ -18,6 +18,7 @@ const Blog = ({ loggedInUser }) => {
   const handleAddComment = (event) => {
     event.preventDefault()
     addComment(blog.id, comment.value)
+    resetComment()
   }
 
   const canLike = loggedInUser && loggedInUser.username === blog.user.username

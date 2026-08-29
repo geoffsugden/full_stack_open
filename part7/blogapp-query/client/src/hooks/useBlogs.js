@@ -89,9 +89,7 @@ export const useBlogs = () => {
     isError: result.isError,
     addBlog: (blog) => newBlogMutation.mutate(blog),
     addLike: (blog) => likeBlogMutation.mutate(blog),
-    addComment: (blogId, comment) => {
-      addBlogCommentMutation.mutate({ blogId, comment })
-    },
+    addComment: (blogId, comment) => addBlogCommentMutation.mutate({ blogId, comment }),
     removeBlog: (blog) => {
       if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
         removeBlogMutation.mutate(blog.id)
