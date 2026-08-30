@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useNavigate } from 'react-router-dom'
-import { TextField, Button, Typography } from '@mui/material'
+import { Box, Card, TextField, Button, Typography } from '@mui/material'
 import { useBlogs } from '../hooks/useBlogs'
 import useField from '../hooks/useField'
 
@@ -20,20 +20,21 @@ const NewBlogForm = () => {
   }
 
   return (
-    <div>
-      <Typography variant='h4' sx={{ py: 2 }}>
-        Add New Blog Listing
-      </Typography>
-      <form onSubmit={handleNewBlog} className='form-container'>
-        <TextField {...title} className='new-blog-input' />
-        <TextField {...author} className='new-blog-input' />
-        <TextField {...url} className='new-blog-input' />
-
-        <Button type='submit' variant='contained' style={{ marginTop: 10 }}>
-          Create
-        </Button>
-      </form>
-    </div>
+    <Card elevation={3}>
+      <Box sx={{ px: 2, pb: 2 }}>
+        <Typography variant='h2' sx={{ py: 2, fontSize: '2.5rem', fontWeight: 'bold' }}>
+          Add New Blog Listing
+        </Typography>
+        <form onSubmit={handleNewBlog} className='form-container'>
+          <TextField {...title} className='new-blog-input' />
+          <TextField {...author} className='new-blog-input' />
+          <TextField {...url} className='new-blog-input' />
+          <Button type='submit' size='large' variant='contained' style={{ marginTop: 10 }}>
+            Create
+          </Button>
+        </form>
+      </Box>
+    </Card>
   )
 }
 

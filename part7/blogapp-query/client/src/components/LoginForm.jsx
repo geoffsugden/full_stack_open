@@ -19,7 +19,7 @@ const LoginForm = () => {
 
   return (
     <div>
-      <Typography variant='h4' sx={{ py: 2 }}>
+      <Typography variant='h2' sx={{ py: 2 }}>
         Log in to the application
       </Typography>
       <form onSubmit={handlelogin} className='form-container'>

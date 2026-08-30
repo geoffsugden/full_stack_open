@@ -1,6 +1,7 @@
+import React from 'react'
 import { useMatch } from 'react-router-dom'
 import useUsers from '../hooks/userUsers'
-import { Typography } from '@mui/material'
+import { Card, CardHeader, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material'
 
 const User = () => {
   const { users, isPending, isError } = useUsers()
@@ -13,19 +14,24 @@ const User = () => {
   if (!user) return null
 
   return (
-    <div>
-      <Typography variant='h4' sx={{ pt: 2 }}>
-        {user.name}
-      </Typography>
-      <Typography variant='h5' sx={{ pt: 2 }}>
+    <Card elevation={3}>
+      <CardHeader title={<Typography variant='h2'>{user.name}</Typography>} />
+      <Typography variant='h3' sx={{ pt: 2, px: 2 }}>
         Added Blogs
       </Typography>
-      <ul>
+      <List sx={{ width: '70%', mb: 2 }}>
         {user.blogs.map((blog) => (
-          <li key={blog.id}>{blog.title}</li>
+          <React.Fragment key={blog.id}>
+            <ListItemButton component='a' href={`/blogs/${blog.id}`} sx={{ py: 0.5 }}>
+              <ListItemText
+                primary={blog.title}
+                sx={{ bgcolor: 'grey.100', p: 1.5, borderRadius: 2, width: 'fit-content' }}
+              />
+            </ListItemButton>
+          </React.Fragment>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Card>
   )
 }
 

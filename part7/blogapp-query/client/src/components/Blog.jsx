@@ -1,5 +1,21 @@
 import { useMatch } from 'react-router-dom'
-import { TextField, Button, Typography, Paper, Link, Box } from '@mui/material'
+import React from 'react'
+import {
+  Avatar,
+  Card,
+  TextField,
+  Button,
+  Typography,
+  Link,
+  List,
+  ListItem,
+  ListItemText,
+  CardHeader,
+  Stack,
+  Box,
+} from '@mui/material'
+import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined'
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined'
 import useBlogs from '../hooks/useBlogs'
 import useField from '../hooks/useField'
 
@@ -26,57 +42,77 @@ const Blog = ({ loggedInUser }) => {
   const canComment = loggedInUser
 
   return (
-    <Paper className='blog' sx={{ mt: 1, p: 2 }}>
-      <Typography className='blog-title' variant='h5' sx={{ fontWeight: 'heavy' }}>
-        {blog.title}
-      </Typography>
-      <Typography className='blog-author' variant='subtitle1'>
-        by {blog.author}
-      </Typography>
-
-      <Link href={blog.url} className='blog-url'>
+    <Card elevation={2} className='blog' sx={{ mb: 4, pl: 2, pr: 2, pb: 2, borderRadius: 2 }}>
+      <CardHeader
+        avatar={
+          <Avatar sx={{ bgcolor: 'primary.main' }}>{blog.author ? blog.author.charAt(0).toUpperCase() : '?'}</Avatar>
+        }
+        title={
+          <Typography className='blog-title' variant='h2' fontWeight='bold'>
+            {blog.title}
+          </Typography>
+        }
+        subheader={`by ${blog.author} • Added by ${blog.user.name}`}
+      />
+      <Link href={blog.url} underline='hover' sx={{ display: 'block', mb: 2, wordBreak: 'break-all' }}>
         {blog.url}
       </Link>
-      <Typography className='blog-user' variant='body2'>
-        Added by {blog.user.name}
-      </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
-        <Typography className='blog-likes' variant='body1'>
+      <Stack direction='row' spacing={2} alignItems='center' sx={{ mb: 3 }}>
+        <Typography variant='body1' fontWeight='medium'>
           {blog.likes} likes
-          {canLike && (
-            <Button variant='outlined' className='like-button' onClick={() => addLike(blog)} sx={{ ml: 1 }}>
-              Like
-            </Button>
-          )}
         </Typography>
+        {canLike && (
+          <Button variant='contained' size='small' startIcon={<ThumbUpOutlinedIcon />} onClick={() => addLike(blog)}>
+            Like
+          </Button>
+        )}
         {canDelete && (
           <Button
             variant='outlined'
             color='error'
+            size='small'
+            sx={{ ml: 'auto' }}
             className='remove-blog-button'
-            onClick={() => removeBlog(blog)}
-            sx={{ mb: 1 }}>
+            startIcon={<DeleteOutlineOutlinedIcon />}
+            onClick={() => removeBlog(blog)}>
             Delete
           </Button>
         )}
-      </Box>
-      <Typography className='blog-comments-header' variant='h6'>
+      </Stack>
+      <Typography variant='h3' sx={{ mt: 2, mb: 1 }}>
         Comments
       </Typography>
-      <ul>
-        {blog.comments.map((comment) => (
-          <li key={comment.id}>{comment.comment}</li>
-        ))}
-      </ul>
+      <List sx={{ width: '70%', mb: 2 }}>
+        {blog.comments &&
+          blog.comments.map((comment) => (
+            <React.Fragment key={comment.id}>
+              <ListItem disableGutters sx={{ py: 0.5 }}>
+                <ListItemText
+                  primary={comment.comment}
+                  sx={{ bgcolor: 'grey.100', p: 1.5, borderRadius: 2, width: 'fit-content' }}
+                />
+              </ListItem>
+            </React.Fragment>
+          ))}
+      </List>
+
       {canComment && (
-        <form onSubmit={handleAddComment} className='comment-container'>
-          <TextField {...comment} variant='outlined' />
-          <Button variant='outlined' color='primary' className='add-comment-button' type='submit'>
-            Add Comment
+        <Box component='form' onSubmit={handleAddComment} sx={{ display: 'flex', gap: 1, mt: 2 }}>
+          <TextField
+            fullWidth
+            size='small'
+            placeholder='Write a comment...'
+            value={comment.value}
+            onChange={comment.onChange}
+            variant='outlined'
+            id={comment.id}
+          />
+          <Button type='submit' variant='contained' color='primary' disableElevation sx={{ whiteSpace: 'nowrap' }}>
+            Post
           </Button>
-        </form>
+        </Box>
       )}
-    </Paper>
+    </Card>
   )
 }
 
